@@ -80,20 +80,6 @@
             overflow-x: auto;
             position: relative;
         }
-        .ai-message pre button {
-            position: absolute;
-            top: 5px;
-            right: 5px;
-            background: #444;
-            color: #fff;
-            border: none;
-            padding: 4px 8px;
-            font-size: 0.7rem;
-            border-radius: 4px;
-            cursor: pointer;
-            z-index: 10;
-        }
-        .ai-message pre button:hover { background: #666; }
 
         .msg-image { max-width: 100%; border-radius: 10px; margin-bottom: 8px; border: 1px solid #ddd; }
 
@@ -335,23 +321,23 @@
 
             if(content) {
                 if(role === 'ai') {
-                    div.innerHTML = marked.parse(content);
+                    const parsed = typeof content === 'string' ? content : JSON.stringify(content);
+                    div.innerHTML = marked.parse(parsed);
                     div.querySelectorAll('pre code').forEach(block => {
                         hljs.highlightElement(block);
-                        const btn = document.createElement('button');
-                        btn.innerText = 'Copy';
-                        btn.onclick = () => { 
+                        const copyBtn = document.createElement('button');
+                        copyBtn.innerText = '📋 Copy';
+                        copyBtn.style.cssText = 'position:absolute;top:8px;right:8px;padding:4px 10px;background:#444;color:white;border:none;border-radius:5px;cursor:pointer;font-size:0.75rem;';
+                        copyBtn.onclick = () => { 
                             navigator.clipboard.writeText(block.innerText); 
-                            btn.innerText = 'Copied ✓'; 
-                            setTimeout(() => btn.innerText = 'Copy', 2000); 
+                            copyBtn.innerText = '✓ Copied'; 
+                            setTimeout(() => copyBtn.innerText = '📋 Copy', 2000); 
                         };
                         block.parentElement.style.position = 'relative';
-                        block.parentElement.appendChild(btn);
+                        block.parentElement.appendChild(copyBtn);
                     });
                 } else {
-                    const p = document.createElement('p');
-                    p.innerText = content;
-                    div.appendChild(p);
+                    div.innerText = content;
                 }
             }
             container.appendChild(div);
