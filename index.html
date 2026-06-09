@@ -105,11 +105,11 @@
         /* Input Card */
         #input-area { padding: 15px 15%; background: var(--bg-color); }
         .input-card {
-            background: white; border-radius: 24px; padding: 8px 15px; border: 1px solid var(--border-color);
+            background: white; border-radius: 24px; padding: 10px 20px; border: 1px solid var(--border-color);
             box-shadow: var(--shadow); display: flex; flex-direction: column;
         }
         .input-row { display: flex; align-items: center; gap: 10px; }
-        #chat-input { flex: 1; border: none; padding: 10px; font-size: 1rem; outline: none; background: transparent; resize: none; max-height: 150px; }
+        #chat-input { flex: 1; border: none; padding: 10px 0; font-size: 1rem; outline: none; background: transparent; resize: none; max-height: 150px; }
         
         .premium-send-btn {
             background: var(--premium-gradient); color: white; border: none;
@@ -117,9 +117,6 @@
             display: flex; align-items: center; justify-content: center; transition: 0.3s;
         }
         .premium-send-btn:hover { transform: scale(1.1); }
-
-        #image-preview-container { display: none; padding: 8px; position: relative; }
-        #image-preview { height: 50px; border-radius: 8px; border: 1px solid var(--accent-blue); }
 
         @media (max-width: 768px) { #chat-container, #input-area { padding: 10px; } }
     </style>
@@ -176,14 +173,7 @@
         </div>
 
         <div class="input-card">
-            <div id="image-preview-container">
-                <img id="image-preview" src="">
-                <div onclick="removeImage()" style="position:absolute; top:-5px; right:-5px; background:red; color:white; border-radius:50%; width:18px; height:18px; text-align:center; font-size:12px; cursor:pointer;">×</div>
-            </div>
             <div class="input-row">
-                <button class="icon-btn" onclick="document.getElementById('file-in').click()" style="background:none;">🖼️</button>
-                <input type="file" id="file-in" hidden accept="image/*" onchange="handleImage(this)">
-                
                 <textarea id="chat-input" placeholder="Type your message..." rows="1" oninput="this.style.height='';this.style.height=this.scrollHeight+'px'"></textarea>
                 
                 <button class="premium-send-btn" onclick="sendMessage()">
@@ -195,7 +185,6 @@
 
     <script>
         let chatHistory = [];
-        let base64Image = null;
         let currentKeyIndex = 0;
 
         // Toggle Functions
@@ -209,20 +198,6 @@
                 for (let d of dropdowns) { if (d.classList.contains('show')) d.classList.remove('show'); }
             }
         }
-
-        function handleImage(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    base64Image = e.target.result;
-                    document.getElementById('image-preview').src = e.target.result;
-                    document.getElementById('image-preview-container').style.display = 'block';
-                };
-                reader.readAsDataURL(input.files[0]);
-            }
-        }
-
-        function removeImage() { base64Image = null; document.getElementById('image-preview-container').style.display = 'none'; }
 
         function quickPrompt(text) {
             const input = document.getElementById('chat-input');
@@ -254,35 +229,31 @@
             const text = inputField.value.trim();
             const keys = document.getElementById('groq-keys').value.split('\n').filter(k => k.trim());
 
-            // Fix: Remove only photo sending. Must have text.
             if(!text) { alert("Please enter a message!"); return; }
             if(keys.length === 0) { alert("Please set API Keys!"); toggleModal(true); return; }
 
-            addMessage(text, 'user', base64Image);
+            addMessage(text, 'user');
             inputField.value = '';
             inputField.style.height = 'auto';
 
             try {
-                const response = await callGroqWithFallback(text, base64Image, keys);
+                const response = await callGroqWithFallback(text, keys);
                 addMessage(response, 'ai');
                 syncToGoogleSheet(text, response);
             } catch (err) {
                 addMessage("Error: API Keys not working.", 'ai');
             }
-            removeImage();
         }
 
-        async function callGroqWithFallback(prompt, img, keys) {
+        async function callGroqWithFallback(prompt, keys) {
             const sys = document.getElementById('system-prompt').value || "You are Antu AR, a helpful assistant.";
             for (let i = currentKeyIndex; i < keys.length; i++) {
                 try {
                     const key = keys[i].trim();
-                    const model = img ? "llama-3.2-11b-vision-preview" : "llama-3.3-70b-versatile";
+                    const model = "llama-3.3-70b-versatile";
                     const payload = {
                         model: model,
-                        messages: img ? 
-                        [{role: "user", content: [{type: "text", text: prompt}, {type: "image_url", image_url: {url: img}}]}] :
-                        [{role: "system", content: sys}, ...chatHistory, {role: "user", content: prompt}]
+                        messages: [{role: "system", content: sys}, ...chatHistory, {role: "user", content: prompt}]
                     };
                     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                         method: 'POST',
@@ -293,7 +264,7 @@
                         currentKeyIndex = i;
                         const data = await res.json();
                         const reply = data.choices[0].message.content;
-                        if(!img) chatHistory.push({role: "user", content: prompt}, {role: "assistant", content: reply});
+                        chatHistory.push({role: "user", content: prompt}, {role: "assistant", content: reply});
                         return reply;
                     }
                 } catch (e) {}
@@ -301,11 +272,11 @@
             throw new Error("Failed");
         }
 
-        function addMessage(content, role, img = null) {
+        function addMessage(content, role) {
             const container = document.getElementById('chat-container');
             const div = document.createElement('div');
             div.className = `message ${role}-message`;
-            if(img) { const i = document.createElement('img'); i.src = img; i.style.maxWidth = '100%'; i.style.borderRadius = '10px'; div.appendChild(i); }
+            
             if(content) {
                 if(role === 'ai') {
                     div.innerHTML = marked.parse(content);
