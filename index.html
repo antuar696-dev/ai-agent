@@ -4,12 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blue Nexus AI - Research & Vision</title>
-    
-    <!-- CDNs -->
     <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Marked & Highlight.js CDNs -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 
     <style>
         :root {
@@ -57,10 +57,10 @@
         }
 
         .message {
-            max-width: 85%;
+            max-width: 80%;
             padding: 14px 18px;
             border-radius: 18px;
-            line-height: 1.6;
+            line-height: 1.5;
             font-size: 0.95rem;
             animation: slideUp 0.3s ease;
             position: relative;
@@ -70,67 +70,34 @@
         .user-message { align-self: flex-end; background-color: var(--accent-blue); color: white; border-bottom-right-radius: 2px; }
         .ai-message { align-self: flex-start; background-color: var(--main-white); color: var(--text-dark); border-bottom-left-radius: 2px; box-shadow: var(--shadow); }
 
-        /* Markdown Styles */
-        .message h1, .message h2, .message h3 { margin: 10px 0; }
-        .message ul, .message ol { margin-left: 20px; margin-bottom: 10px; }
-        .message p { margin-bottom: 8px; }
-
-        /* Code Block Styling */
-        .code-container {
-            margin: 15px 0;
-            border-radius: 8px;
-            overflow: hidden;
+        /* AI Message Code Block Styles */
+        .ai-message pre {
             background: #1e1e1e;
-            border: 1px solid #444;
+            color: #fff;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 10px 0;
+            overflow-x: auto;
+            position: relative;
         }
-        .code-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 8px 15px;
-            background: #2d2d2d;
-            color: #ccc;
-            font-size: 0.8rem;
-            border-bottom: 1px solid #444;
-        }
-        .code-actions { display: flex; gap: 10px; }
-        .action-btn {
+        .ai-message pre button {
+            position: absolute;
+            top: 5px;
+            right: 5px;
             background: #444;
-            color: white;
+            color: #fff;
             border: none;
             padding: 4px 8px;
+            font-size: 0.7rem;
             border-radius: 4px;
             cursor: pointer;
-            font-size: 0.75rem;
+            z-index: 10;
         }
-        .action-btn:hover { background: #666; }
-        .run-btn { background: #28a745; }
-        .run-btn:hover { background: #218838; }
+        .ai-message pre button:hover { background: #666; }
 
-        pre { margin: 0; padding: 15px; overflow-x: auto; }
-        code { font-family: 'Consolas', monospace; }
-
-        /* Modal for Run Code */
-        #run-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.8);
-            z-index: 2000;
-            flex-direction: column;
-        }
-        .modal-header {
-            padding: 15px;
-            background: white;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        #preview-frame { flex: 1; background: white; border: none; }
-
-        /* Original Styles Continued */
         .msg-image { max-width: 100%; border-radius: 10px; margin-bottom: 8px; border: 1px solid #ddd; }
 
+        /* Settings Modal */
         #settings-modal {
             display: none;
             position: fixed;
@@ -149,14 +116,22 @@
 
         textarea.api-list { width: 100%; height: 80px; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; resize: none; font-size: 0.8rem; }
 
+        /* Input Area */
         #input-area { padding: 20px 15%; background: var(--bg-color); }
-        .input-card { background: white; border-radius: 24px; padding: 8px 15px; border: 1px solid var(--border-color); box-shadow: var(--shadow); display: flex; flex-direction: column; }
+        
+        .input-card {
+            background: white; border-radius: 24px; padding: 8px 15px; border: 1px solid var(--border-color);
+            box-shadow: var(--shadow); display: flex; flex-direction: column;
+        }
+
         .input-row { display: flex; align-items: center; gap: 10px; }
-        #chat-input { flex: 1; border: none; padding: 10px; font-size: 1rem; outline: none; background: transparent; resize: none; max-height: 200px; }
+        
+        #chat-input { flex: 1; border: none; padding: 10px; font-size: 1rem; outline: none; background: transparent; resize: none; }
 
         .icon-btn { cursor: pointer; padding: 10px; border-radius: 50%; border: none; background: transparent; color: var(--accent-blue); font-size: 1.2rem; transition: 0.2s; }
         .icon-btn:hover { background: var(--light-blue); }
 
+        /* Progress Bar */
         .progress-ui { display: none; margin-bottom: 8px; }
         .p-bar { height: 4px; background: #e0e0e0; border-radius: 2px; overflow: hidden; }
         .p-fill { height: 100%; background: var(--accent-blue); width: 0%; transition: 0.3s; }
@@ -165,7 +140,7 @@
         #image-preview { height: 60px; border-radius: 8px; border: 1px solid var(--accent-blue); }
         .remove-img { position: absolute; top: -5px; right: -5px; cursor: pointer; background: red; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 12px; display: flex; align-items: center; justify-content: center; }
 
-        @media (max-width: 768px) { #chat-container, #input-area { padding: 15px; } .message { max-width: 95%; } }
+        @media (max-width: 768px) { #chat-container, #input-area { padding: 15px; } }
     </style>
 </head>
 <body>
@@ -189,28 +164,23 @@
     <div id="settings-modal">
         <div class="modal-content">
             <h3 style="margin-bottom: 20px; color: var(--accent-blue);">Settings & API Keys</h3>
+
             <div class="api-box">
                 <h4>Groq API Keys (প্রতি লাইনে একটি)</h4>
-                <textarea id="groq-keys" class="api-list" placeholder="gsk_xxxx..."></textarea>
+                <textarea id="groq-keys" class="api-list" placeholder="gsk_xxxx...&#10;gsk_yyyy..."></textarea>
             </div>
+
             <div class="api-box">
                 <h4>Tavily Search Key (Optional)</h4>
                 <input type="password" id="tavily-key" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ddd;" placeholder="tvly-...">
             </div>
+
             <div style="display: flex; gap: 10px;">
                 <button onclick="toggleModal(false)" style="flex:1; padding:10px; border-radius:8px; border:none; background:var(--accent-blue); color:white; font-weight:600; cursor:pointer;">Save Keys</button>
                 <button onclick="generateShareLink()" style="padding:10px; border-radius:8px; border:1px solid var(--accent-blue); color:var(--accent-blue); background:white; cursor:pointer;">🔗 Share</button>
             </div>
+            <p style="font-size: 0.7rem; color: #888; margin-top: 10px;">* Keys are stored only in your browser's session.</p>
         </div>
-    </div>
-
-    <!-- Code Runner Modal -->
-    <div id="run-modal">
-        <div class="modal-header">
-            <span style="font-weight: bold; color: var(--accent-blue);">Code Preview</span>
-            <button onclick="closeRunner()" style="background: red; color: white; border: none; padding: 5px 15px; border-radius: 5px; cursor: pointer;">Close [X]</button>
-        </div>
-        <iframe id="preview-frame"></iframe>
     </div>
 
     <div id="input-area">
@@ -227,7 +197,9 @@
             <div class="input-row">
                 <button class="icon-btn" onclick="document.getElementById('file-in').click()">🖼️</button>
                 <input type="file" id="file-in" hidden accept="image/*" onchange="handleImage(this)">
+                
                 <textarea id="chat-input" placeholder="মেসেজ লিখুন..." rows="1" oninput="this.style.height='';this.style.height=this.scrollHeight+'px'"></textarea>
+                
                 <button class="icon-btn" onclick="sendMessage()">🚀</button>
             </div>
         </div>
@@ -237,32 +209,6 @@
         let chatHistory = [];
         let base64Image = null;
         let currentKeyIndex = 0;
-
-        // Marked.js options with Highlight.js
-        const renderer = new marked.Renderer();
-        renderer.code = function(code, language) {
-            const validLang = !!(language && hljs.getLanguage(language));
-            const highlighted = validLang ? hljs.highlight(code, { language }).value : code;
-            const langLabel = language || 'code';
-            
-            // Logic for Run Button (HTML, CSS, JS)
-            const canRun = ['html', 'javascript', 'js', 'css'].includes(language?.toLowerCase());
-            const runBtn = canRun ? `<button class="action-btn run-btn" onclick="runCode(this)">▶ Run</button>` : '';
-
-            return `
-                <div class="code-container">
-                    <div class="code-header">
-                        <span>${langLabel.toUpperCase()}</span>
-                        <div class="code-actions">
-                            ${runBtn}
-                            <button class="action-btn" onclick="copyCode(this)">Copy</button>
-                        </div>
-                    </div>
-                    <pre><code class="hljs ${language}">${highlighted}</code></pre>
-                    <template class="raw-code">${code}</template>
-                </div>`;
-        };
-        marked.setOptions({ renderer: renderer });
 
         function toggleModal(show) {
             document.getElementById('settings-modal').style.display = show ? 'flex' : 'none';
@@ -313,7 +259,9 @@
                     headers: {'Content-Type': 'text/plain'},
                     body: JSON.stringify({agent, userMessage, aiReply})
                 });
-            } catch (error) { console.error('Sync error:', error); }
+            } catch (error) {
+                console.error('Error syncing:', error);
+            }
         }
 
         async function sendMessage() {
@@ -323,7 +271,7 @@
             const keys = keysRaw.split('\n').filter(k => k.trim() !== "");
 
             if(!text && !base64Image) return;
-            if(keys.length === 0) { alert("API Key দিন!"); toggleModal(true); return; }
+            if(keys.length === 0) { alert("দয়া করে Groq API Key দিন!"); toggleModal(true); return; }
 
             const userTextForSync = text;
             addMessage(text, 'user', base64Image);
@@ -354,7 +302,7 @@
                         model: model,
                         messages: img ? 
                         [{role: "user", content: [{type: "text", text: prompt || "Analyze image"}, {type: "image_url", image_url: {url: img}}]}] :
-                        [{role: "system", content: "You are a helpful assistant. Use markdown for formatting."}, ...chatHistory, {role: "user", content: prompt}]
+                        [{role: "system", content: "You are a helpful assistant."}, ...chatHistory, {role: "user", content: prompt}]
                     };
 
                     const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -364,7 +312,7 @@
                     });
 
                     if (res.ok) {
-                        currentKeyIndex = i; 
+                        currentKeyIndex = i;
                         const data = await res.json();
                         const reply = data.choices[0].message.content;
                         if(!img) chatHistory.push({role: "user", content: prompt}, {role: "assistant", content: reply});
@@ -379,71 +327,35 @@
             const container = document.getElementById('chat-container');
             const div = document.createElement('div');
             div.className = `message ${role}-message`;
-            
+
             if(img) {
                 const i = document.createElement('img'); i.src = img; i.className = 'msg-image';
                 div.appendChild(i);
             }
-            
+
             if(content) {
-                const contentDiv = document.createElement('div');
                 if(role === 'ai') {
-                    contentDiv.innerHTML = marked.parse(content);
+                    div.innerHTML = marked.parse(content);
+                    div.querySelectorAll('pre code').forEach(block => {
+                        hljs.highlightElement(block);
+                        const btn = document.createElement('button');
+                        btn.innerText = 'Copy';
+                        btn.onclick = () => { 
+                            navigator.clipboard.writeText(block.innerText); 
+                            btn.innerText = 'Copied ✓'; 
+                            setTimeout(() => btn.innerText = 'Copy', 2000); 
+                        };
+                        block.parentElement.style.position = 'relative';
+                        block.parentElement.appendChild(btn);
+                    });
                 } else {
-                    contentDiv.innerText = content;
+                    const p = document.createElement('p');
+                    p.innerText = content;
+                    div.appendChild(p);
                 }
-                div.appendChild(contentDiv);
             }
-            
             container.appendChild(div);
             container.scrollTop = container.scrollHeight;
-        }
-
-        // Feature: Copy Code
-        window.copyCode = (btn) => {
-            const container = btn.closest('.code-container');
-            const code = container.querySelector('.raw-code').innerHTML;
-            navigator.clipboard.writeText(code).then(() => {
-                const originalText = btn.innerText;
-                btn.innerText = "Copied! ✓";
-                btn.style.color = "#00ff00";
-                setTimeout(() => {
-                    btn.innerText = originalText;
-                    btn.style.color = "white";
-                }, 2000);
-            });
-        };
-
-        // Feature: Run Code
-        window.runCode = (btn) => {
-            const container = btn.closest('.code-container');
-            const code = container.querySelector('.raw-code').innerHTML;
-            const lang = container.querySelector('.code-header span').innerText.toLowerCase();
-            
-            const modal = document.getElementById('run-modal');
-            const iframe = document.getElementById('preview-frame');
-            modal.style.display = 'flex';
-
-            let finalCode = '';
-            if(lang === 'html') {
-                finalCode = code;
-            } else if(lang === 'css') {
-                finalCode = `<style>${code}</style><h3>CSS Preview:</h3><p>The CSS has been applied to this preview.</p>`;
-            } else if(['javascript', 'js'].includes(lang)) {
-                finalCode = `<script>${code}<\/script><p>JavaScript is running. Check console or UI effects.</p>`;
-            }
-
-            iframe.srcdoc = `
-                <html>
-                    <head><style>body{font-family:sans-serif;padding:20px;}</style></head>
-                    <body>${finalCode}</body>
-                </html>
-            `;
-        };
-
-        function closeRunner() {
-            document.getElementById('run-modal').style.display = 'none';
-            document.getElementById('preview-frame').srcdoc = '';
         }
 
         function generateShareLink() {
