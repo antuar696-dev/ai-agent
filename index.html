@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blue Nexus AI - Research Professional</title>
+    <title>Blue Nexus AI - Ultimate Research Agent</title>
     <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <!-- Firebase SDKs -->
@@ -15,10 +15,11 @@
             --bg-color: #f8fafc;
             --main-white: #ffffff;
             --accent-blue: #2563eb;
+            --premium-gradient: linear-gradient(135deg, #2563eb 0%, #7c3aed 100%);
             --light-blue: #eff6ff;
             --text-dark: #0f172a;
             --border-color: #e2e8f0;
-            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
             --status-online: #22c55e;
             --status-offline: #94a3b8;
         }
@@ -35,99 +36,85 @@
             align-items: center;
             background: var(--main-white);
             border-bottom: 1px solid var(--border-color);
-            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
             z-index: 100;
         }
 
-        .btn-new { background: var(--accent-blue); color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85rem; transition: 0.3s; }
-        .btn-new:hover { background: #1d4ed8; }
-
-        .menu-btn { cursor: pointer; padding: 10px 15px; border-radius: 8px; color: var(--accent-blue); background: var(--light-blue); font-weight: 700; border: none; }
+        .btn-new { background: var(--accent-blue); color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85rem; }
+        .menu-btn { cursor: pointer; padding: 10px 20px; border-radius: 10px; color: white; background: var(--premium-gradient); font-weight: 700; border: none; font-size: 0.85rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
 
         #main-wrapper { display: flex; flex: 1; overflow: hidden; }
 
-        /* Sidebar */
+        /* Sidebar - Agent Connect */
         #network-sidebar {
-            width: 260px;
+            width: 300px;
             background: var(--main-white);
             border-right: 1px solid var(--border-color);
-            display: flex;
-            flex-direction: column;
+            display: flex; flex-direction: column; padding: 15px;
         }
 
-        .sidebar-header { padding: 20px; font-weight: 700; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; color: var(--accent-blue); }
-        #agent-list { flex: 1; overflow-y: auto; padding: 12px; }
-        .agent-item { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 8px; margin-bottom: 5px; font-size: 0.85rem; }
-        .status-dot { width: 8px; height: 8px; border-radius: 50%; }
-        .online { background: var(--status-online); box-shadow: 0 0 5px var(--status-online); }
+        .connect-box { background: #f1f5f9; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
+        .connect-box h4 { font-size: 0.85rem; font-weight: 700; color: var(--accent-blue); margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
+        .c-input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem; outline: none; margin-bottom: 10px; }
+        .btn-c-action { width: 100%; padding: 10px; background: var(--accent-blue); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
+
+        #agent-list { flex: 1; overflow-y: auto; }
+        .agent-card { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; margin-bottom: 8px; cursor: pointer; border: 1px solid transparent; transition: 0.2s; }
+        .agent-card:hover { background: var(--light-blue); }
+        .agent-card.active { border-color: var(--accent-blue); background: var(--light-blue); }
+        .dot { width: 10px; height: 10px; border-radius: 50%; }
+        .online { background: var(--status-online); box-shadow: 0 0 8px var(--status-online); }
         .offline { background: var(--status-offline); }
 
-        /* Chat Area */
-        #chat-container {
-            flex: 1;
-            overflow-y: auto;
-            padding: 30px 10%;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
+        /* Main Chat Window */
+        #chat-window { flex: 1; display: flex; flex-direction: column; position: relative; }
+        #chat-header { padding: 12px 25px; background: white; border-bottom: 1px solid var(--border-color); font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 10px; }
 
-        .message { max-width: 80%; padding: 16px 20px; border-radius: 20px; line-height: 1.6; font-size: 0.95rem; animation: fadeIn 0.3s; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } }
+        #chat-container { flex: 1; overflow-y: auto; padding: 30px 15%; display: flex; flex-direction: column; gap: 20px; }
         
-        .user-message { align-self: flex-end; background: var(--accent-blue); color: white; border-bottom-right-radius: 4px; }
-        .ai-message { align-self: flex-start; background: var(--main-white); border: 1px solid var(--border-color); border-bottom-left-radius: 4px; box-shadow: var(--shadow); }
-        .system-msg { align-self: center; font-size: 0.75rem; background: #e2e8f0; padding: 5px 12px; border-radius: 12px; font-weight: 600; }
+        .message { max-width: 80%; padding: 16px 20px; border-radius: 20px; font-size: 0.95rem; line-height: 1.6; animation: slideUp 0.3s; position: relative; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } }
+        
+        .user-msg { align-self: flex-end; background: var(--accent-blue); color: white; border-bottom-right-radius: 2px; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.2); }
+        .ai-msg { align-self: flex-start; background: white; border: 1px solid var(--border-color); border-bottom-left-radius: 2px; box-shadow: var(--shadow); }
+        .sys-msg { align-self: center; font-size: 0.75rem; background: #e2e8f0; color: #475569; padding: 5px 15px; border-radius: 10px; font-weight: 600; }
 
-        /* Modal Settings */
+        /* Settings Modal */
         #settings-modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            z-index: 1000;
-            justify-content: center; align-items: center;
-            backdrop-filter: blur(4px);
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(15, 23, 42, 0.6); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px);
         }
+        .modal-content { background: white; width: 90%; max-width: 550px; padding: 30px; border-radius: 25px; max-height: 90vh; overflow-y: auto; }
+        .modal-content h3 { margin-bottom: 15px; font-weight: 800; color: #1e293b; }
 
-        .modal-content {
-            background: white; width: 90%; max-width: 500px; padding: 25px; border-radius: 20px;
-            max-height: 85vh; overflow-y: auto;
-        }
-
-        .field-group { margin-bottom: 15px; }
-        label { display: block; font-size: 0.8rem; font-weight: 700; margin-bottom: 5px; color: var(--text-dark); }
-        .premium-input { width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 10px; font-size: 0.85rem; outline: none; }
-        .premium-input:focus { border-color: var(--accent-blue); }
-
-        .api-list { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
-        .api-row { display: flex; gap: 8px; }
-        .remove-btn { color: #ef4444; border: none; background: none; cursor: pointer; font-weight: bold; }
-
-        /* Toggle Button Styles */
-        .toggle-container { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-top: 1px solid #eee; margin-top: 10px; }
-        .switch { position: relative; display: inline-block; width: 45px; height: 24px; }
+        .input-group { margin-bottom: 15px; }
+        .input-group label { display: block; font-size: 0.8rem; font-weight: 700; margin-bottom: 5px; color: #64748b; }
+        .st-input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; outline: none; font-size: 0.85rem; }
+        
+        /* Toggle Switch */
+        .switch-row { display: flex; align-items: center; justify-content: space-between; background: #f8fafc; padding: 12px; border-radius: 12px; margin: 10px 0; border: 1px solid #e2e8f0; }
+        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
         .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 24px; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background-color: var(--accent-blue); }
-        input:checked + .slider:before { transform: translateX(21px); }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
+        input:checked + .slider { background: var(--premium-gradient); }
+        input:checked + .slider:before { transform: translateX(24px); }
 
-        /* Input Card */
-        #input-area { padding: 20px 10%; background: var(--bg-color); border-top: 1px solid var(--border-color); }
-        .input-card { background: white; border-radius: 20px; padding: 12px 20px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 15px; box-shadow: var(--shadow); }
-        #chat-input { flex: 1; border: none; outline: none; font-size: 1rem; resize: none; min-height: 25px; }
-
-        .premium-send {
-            background: var(--accent-blue); color: white; border: none; padding: 12px 25px; border-radius: 12px;
-            font-weight: 700; cursor: pointer; transition: 0.3s; white-space: nowrap;
+        /* Premium Input Area */
+        #input-area { padding: 25px 15%; background: var(--bg-color); border-top: 1px solid #e2e8f0; }
+        .input-card { background: white; border-radius: 24px; padding: 12px 20px; display: flex; align-items: center; gap: 15px; border: 1px solid var(--border-color); box-shadow: var(--shadow); }
+        #chat-input { flex: 1; border: none; outline: none; font-size: 1rem; background: transparent; resize: none; min-height: 24px; max-height: 150px; }
+        
+        .premium-btn {
+            background: var(--premium-gradient); color: white; border: none; padding: 14px 28px; border-radius: 16px;
+            font-weight: 800; cursor: pointer; transition: 0.3s; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
         }
-        .premium-send:hover { background: #1d4ed8; transform: translateY(-2px); }
+        .premium-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4); filter: brightness(1.1); }
 
         /* Progress Bar */
-        .progress-box { display: none; margin-bottom: 10px; }
-        .bar-container { height: 4px; background: #eee; border-radius: 10px; overflow: hidden; }
-        .bar-fill { height: 100%; width: 0; background: var(--accent-blue); transition: 0.3s; }
+        .progress-ui { display: none; margin-bottom: 15px; }
+        .p-bar { height: 5px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
+        .p-fill { height: 100%; background: var(--premium-gradient); width: 0%; transition: 0.4s; }
 
         @media (max-width: 768px) { #network-sidebar { display: none; } #chat-container, #input-area { padding: 15px; } }
     </style>
@@ -135,269 +122,316 @@
 <body>
 
     <header>
-        <div class="logo-area"><button class="btn-new" onclick="createNewChat()">New Research</button></div>
-        <div id="active-agent-display" style="font-weight: 700; color: var(--accent-blue);">Nexus Agent</div>
-        <button class="menu-btn" onclick="toggleModal(true)">Settings</button>
+        <div class="logo-area"><button class="btn-new" onclick="location.reload()">New Session</button></div>
+        <div style="font-weight: 800; color: var(--accent-blue); letter-spacing: 1px;">BLUE NEXUS AI PRO</div>
+        <button class="menu-btn" onclick="toggleModal(true)">⚙️ Settings</button>
     </header>
 
     <div id="main-wrapper">
+        <!-- Sidebar Connect Section -->
         <aside id="network-sidebar">
-            <div class="sidebar-header">🌐 Network Agents</div>
-            <div id="agent-list"></div>
+            <div class="connect-box">
+                <h4>🔗 Agent Connect</h4>
+                <input type="text" id="peer-link-input" class="c-input" placeholder="Paste link to connect...">
+                <button class="btn-c-action" onclick="connectToPeer()">Connect to Peer</button>
+            </div>
+            
+            <div style="margin-bottom: 10px; font-weight: 800; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Connected Network</div>
+            <div id="agent-list">
+                <!-- Live Agents and Peers appear here -->
+            </div>
+
+            <button onclick="copyMyAgentLink()" style="margin-top: 20px; width: 100%; border: 2px dashed #cbd5e1; background: none; color: #64748b; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 0.8rem;">
+                📋 Share My Connect Link
+            </button>
         </aside>
 
-        <main id="chat-container">
-            <div class="message ai-message">স্বাগতম! আপনার ব্লু নেক্সাস রিসার্চ টুল এখন প্রস্তুত। শুরু করতে প্রশ্ন লিখুন।</div>
+        <!-- Main Window -->
+        <main id="chat-window">
+            <div id="chat-header">🌐 <span id="current-chat-target">AI Research Engine</span></div>
+            <div id="chat-container">
+                <div class="message ai-msg">
+                    হ্যালো! আমি আপনার নেক্সাস এজেন্ট। চ্যাট শুরু করার আগে আপনার <b>Settings</b> থেকে এক বা একাধিক <b>Groq Key</b> এবং প্রয়োজন হলে <b>Search API Key</b> সেট করে নিন।
+                </div>
+            </div>
         </main>
     </div>
 
     <!-- Settings Modal -->
     <div id="settings-modal">
         <div class="modal-content">
-            <h3 style="margin-bottom: 20px; border-bottom: 2px solid var(--light-blue); padding-bottom: 10px;">Settings Configuration</h3>
+            <h3>System Settings</h3>
             
-            <div class="field-group">
-                <label>Agent Name</label>
-                <input type="text" id="agent-name-input" class="premium-input" placeholder="Nexus Pro">
+            <div class="input-group">
+                <label>My Agent Name</label>
+                <input type="text" id="st-agent-name" class="st-input" placeholder="Agent 007">
             </div>
 
-            <div class="field-group">
-                <label>Groq API Keys (Multiple)</label>
-                <div id="api-key-boxes" class="api-list">
-                    <!-- Multiple API boxes will be injected here -->
-                </div>
-                <button onclick="addApiField()" style="background: var(--light-blue); color: var(--accent-blue); border: none; width: 100%; padding: 10px; border-radius: 8px; font-weight: 600; cursor: pointer;">+ Add Key Box</button>
+            <div class="input-group">
+                <label>Groq API Keys (Multiple Keys: One per line)</label>
+                <textarea id="st-groq-keys" class="st-input" style="height: 60px; resize: none;" placeholder="gsk_xxxx..."></textarea>
+                <p style="font-size: 0.65rem; color: #ef4444; margin-top: 4px;">* একটার লিমিট শেষ হলে পরের কী দিয়ে অটো চ্যাট চলবে।</p>
             </div>
 
-            <div class="field-group">
-                <label>Tavily Search API Key (Optional)</label>
-                <input type="password" id="tavily-key-input" class="premium-input" placeholder="tvly-...">
+            <div class="input-group">
+                <label>Tavily Search API Key</label>
+                <input type="password" id="st-tavily" class="st-input" placeholder="tvly-xxxx...">
             </div>
 
-            <div class="field-group">
-                <label>Serper Google Search API Key (Optional)</label>
-                <input type="password" id="serper-key-input" class="premium-input" placeholder="Serper key...">
+            <div class="input-group">
+                <label>Serper Google API Key</label>
+                <input type="password" id="st-serper" class="st-input" placeholder="serper_xxxx...">
             </div>
 
-            <div class="toggle-container">
-                <div style="font-weight: 700; font-size: 0.9rem;">Web Search Integration</div>
+            <div class="switch-row">
+                <div style="font-weight: 800; font-size: 0.85rem;">🌐 Web Search Integration</div>
                 <label class="switch">
-                    <input type="checkbox" id="web-search-toggle">
+                    <input type="checkbox" id="st-web-toggle">
                     <span class="slider"></span>
                 </label>
             </div>
 
-            <div style="display: flex; gap: 10px; margin-top: 20px;">
-                <button onclick="saveSettings()" style="flex:1; padding: 12px; background: var(--accent-blue); color: white; border: none; border-radius: 10px; font-weight: 700; cursor: pointer;">Save Permanently</button>
-                <button onclick="toggleModal(false)" style="padding: 12px; background: #eee; border: none; border-radius: 10px; cursor: pointer;">Close</button>
+            <div style="display: flex; gap: 12px; margin-top: 25px;">
+                <button onclick="saveSettings()" style="flex: 2; padding: 14px; background: var(--premium-gradient); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer;">SAVE CONFIGURATION</button>
+                <button onclick="toggleModal(false)" style="flex: 1; padding: 14px; background: #f1f5f9; border: none; border-radius: 12px; cursor: pointer; font-weight: 600;">CANCEL</button>
             </div>
         </div>
     </div>
 
+    <!-- Input Section -->
     <div id="input-area">
-        <div class="progress-box" id="p-box">
-            <div class="bar-container"><div class="bar-fill" id="p-fill"></div></div>
-            <div style="font-size: 0.65rem; color: var(--accent-blue); margin-top: 4px; font-weight: bold;" id="p-text">Agent Researching...</div>
+        <div class="progress-ui" id="p-ui">
+            <div class="p-bar"><div class="p-fill" id="p-fill"></div></div>
+            <div style="font-size: 0.7rem; color: var(--accent-blue); margin-top: 5px; font-weight: bold;" id="p-text">Researching in progress...</div>
         </div>
-
         <div class="input-card">
-            <textarea id="chat-input" placeholder="মেসেজ লিখুন..." rows="1" oninput="this.style.height='';this.style.height=this.scrollHeight+'px'"></textarea>
-            <button class="premium-send" onclick="sendMessage()">Send Message</button>
+            <textarea id="chat-input" placeholder="Ask your research question here..." rows="1" oninput="this.style.height='';this.style.height=this.scrollHeight+'px'"></textarea>
+            <button class="premium-btn" onclick="sendMessage()">Send Message</button>
         </div>
     </div>
 
     <script>
-        // --- Firebase Initialize ---
-        const firebaseConfig = {
-            databaseURL: "https://ar-ai-195a9-default-rtdb.firebaseio.com"
-        };
+        // --- Firebase Core ---
+        const firebaseConfig = { databaseURL: "https://ar-ai-195a9-default-rtdb.firebaseio.com" };
         firebase.initializeApp(firebaseConfig);
         const db = firebase.database();
 
         let chatHistory = [];
-        let currentKeyIdx = 0;
-        let myAgentName = "Agent-" + Math.floor(Math.random() * 1000);
+        let myAgentName = "NexusAgent-" + Math.floor(Math.random() * 9999);
+        let activeChatWith = "AI Assistant";
+        let currentGroqKeyIdx = 0;
 
-        // --- Permanent Data Persistence ---
-        function loadSettingsFromStorage() {
-            // Load Agent Name
-            const storedName = localStorage.getItem('nexus_agent_name');
-            if (storedName) {
-                myAgentName = storedName;
-                document.getElementById('agent-name-input').value = myAgentName;
-                document.getElementById('active-agent-display').innerText = myAgentName;
-            }
-
-            // Load Other Keys
-            document.getElementById('tavily-key-input').value = localStorage.getItem('nexus_tavily_key') || '';
-            document.getElementById('serper-key-input').value = localStorage.getItem('nexus_serper_key') || '';
+        // --- Persistent Configuration ---
+        function loadPersistence() {
+            // Fill Fields from Storage
+            myAgentName = localStorage.getItem('nexus_agent_name') || myAgentName;
+            document.getElementById('st-agent-name').value = myAgentName;
+            document.getElementById('st-groq-keys').value = JSON.parse(localStorage.getItem('nexus_groq_keys') || "[]").join('\n');
+            document.getElementById('st-tavily').value = localStorage.getItem('nexus_tavily_key') || "";
+            document.getElementById('st-serper').value = localStorage.getItem('nexus_serper_key') || "";
+            document.getElementById('st-web-toggle').checked = localStorage.getItem('nexus_web_search_enabled') === "true";
             
-            // Load Web Search Toggle
-            const isWebEnabled = localStorage.getItem('nexus_web_search_enabled') === 'true';
-            document.getElementById('web-search-toggle').checked = isWebEnabled;
-
-            // Load Multiple Groq Keys
-            const savedGroqKeys = JSON.parse(localStorage.getItem('nexus_groq_keys') || '[]');
-            const container = document.getElementById('api-key-boxes');
-            container.innerHTML = '';
-            if (savedGroqKeys.length === 0) {
-                addApiField('');
-            } else {
-                savedGroqKeys.forEach(k => addApiField(k));
-            }
+            renderPeers();
         }
 
         function saveSettings() {
-            const nameInput = document.getElementById('agent-name-input').value.trim();
-            const groqInputs = document.querySelectorAll('.groq-key-val');
-            const tavilyVal = document.getElementById('tavily-key-input').value.trim();
-            const serperVal = document.getElementById('serper-key-input').value.trim();
-            const webToggle = document.getElementById('web-search-toggle').checked;
+            const nameVal = document.getElementById('st-agent-name').value.trim() || myAgentName;
+            const groqVal = document.getElementById('st-groq-keys').value.split('\n').filter(k => k.trim() !== "");
+            const tavilyVal = document.getElementById('st-tavily').value.trim();
+            const serperVal = document.getElementById('st-serper').value.trim();
+            const webToggleVal = document.getElementById('st-web-toggle').checked;
 
-            const groqKeysArray = Array.from(groqInputs).map(i => i.value.trim()).filter(k => k !== "");
-
-            // Save to localStorage
-            localStorage.setItem('nexus_agent_name', nameInput || myAgentName);
-            localStorage.setItem('nexus_groq_keys', JSON.stringify(groqKeysArray));
+            localStorage.setItem('nexus_agent_name', nameVal);
+            localStorage.setItem('nexus_groq_keys', JSON.stringify(groqVal));
             localStorage.setItem('nexus_tavily_key', tavilyVal);
             localStorage.setItem('nexus_serper_key', serperVal);
-            localStorage.setItem('nexus_web_search_enabled', webToggle);
+            localStorage.setItem('nexus_web_search_enabled', webToggleVal);
 
-            if(nameInput) {
-                myAgentName = nameInput;
-                document.getElementById('active-agent-display').innerText = myAgentName;
-            }
-            
-            alert("Settings saved permanently!");
-            updateFirebaseStatus();
+            myAgentName = nameVal;
+            updatePresence();
+            alert("Settings updated & saved permanently!");
             toggleModal(false);
         }
 
-        function addApiField(val = '') {
-            const container = document.getElementById('api-key-boxes');
-            const row = document.createElement('div');
-            row.className = 'api-row';
-            row.innerHTML = `
-                <input type="password" class="premium-input groq-key-val" value="${val}" placeholder="gsk_xxxx...">
-                <button class="remove-btn" onclick="this.parentElement.remove()">✕</button>
-            `;
-            container.appendChild(row);
+        // --- Agent Connectivity Logic ---
+        function connectToPeer() {
+            const linkVal = document.getElementById('peer-link-input').value.trim();
+            if(!linkVal) return;
+            try {
+                const encodedData = linkVal.split('#')[1];
+                const config = JSON.parse(atob(encodedData));
+                const remoteName = config.n;
+                if(remoteName === myAgentName) return alert("You can't connect to yourself!");
+
+                let currentPeers = JSON.parse(localStorage.getItem('nexus_connections') || "[]");
+                if(!currentPeers.includes(remoteName)) {
+                    currentPeers.push(remoteName);
+                    localStorage.setItem('nexus_connections', JSON.stringify(currentPeers));
+                    addMessageUI(`System: Agent connected - ${remoteName}`, 'sys-msg');
+                }
+                renderPeers();
+                document.getElementById('peer-link-input').value = "";
+            } catch(e) { alert("Invalid connection link!"); }
         }
 
-        // --- Network & Messaging ---
-        function updateFirebaseStatus() {
-            db.ref('agents/' + myAgentName).set({ name: myAgentName, lastSeen: Date.now() });
-            db.ref('agents/' + myAgentName).onDisconnect().remove();
-        }
-
-        async function fetchNetworkAgents() {
-            const snap = await db.ref('agents').once('value');
+        function renderPeers() {
             const listEl = document.getElementById('agent-list');
-            listEl.innerHTML = '';
-            const data = snap.val();
-            const now = Date.now();
-            if(data) {
-                Object.values(data).forEach(agent => {
-                    const isOnline = (now - agent.lastSeen) < 60000;
-                    const item = document.createElement('div');
-                    item.className = 'agent-item';
-                    item.innerHTML = `<div class="status-dot ${isOnline ? 'online' : 'offline'}"></div><span>${agent.name}</span>`;
-                    listEl.appendChild(item);
+            listEl.innerHTML = "";
+
+            // Standard AI Row
+            const aiCard = document.createElement('div');
+            aiCard.className = `agent-card ${activeChatWith === 'AI Assistant' ? 'active' : ''}`;
+            aiCard.innerHTML = `<div class="dot online"></div><div style="font-weight: 700;">🤖 Research Assistant</div>`;
+            aiCard.onclick = () => switchChat('AI Assistant');
+            listEl.appendChild(aiCard);
+
+            // Saved Peers Row
+            const peers = JSON.parse(localStorage.getItem('nexus_connections') || "[]");
+            peers.forEach(peerName => {
+                const pCard = document.createElement('div');
+                pCard.className = `agent-card ${activeChatWith === peerName ? 'active' : ''}`;
+                pCard.innerHTML = `<div id="dot-${peerName}" class="dot offline"></div><div style="font-weight: 700;">👤 ${peerName}</div>`;
+                pCard.onclick = () => switchChat(peerName);
+                listEl.appendChild(pCard);
+
+                // Online tracking
+                db.ref('presence/' + peerName).on('value', (snap) => {
+                    const d = document.getElementById('dot-' + peerName);
+                    if(d) {
+                        const isLive = snap.val() && (Date.now() - snap.val().lastSeen < 60000);
+                        d.className = isLive ? "dot online" : "dot offline";
+                    }
+                });
+            });
+        }
+
+        function switchChat(name) {
+            activeChatWith = name;
+            document.getElementById('current-chat-target').innerText = name;
+            chatHistory = []; // Reset visual history for simple local view
+            document.getElementById('chat-container').innerHTML = `<div class="sys-msg">Active Chat: ${name}</div>`;
+            renderPeers();
+        }
+
+        // --- Core Message & AI Logic ---
+        async function sendMessage() {
+            const inputField = document.getElementById('chat-input');
+            const userQuery = inputField.value.trim();
+            if(!userQuery) return;
+
+            addMessageUI(userQuery, 'user-msg');
+            inputField.value = "";
+            inputField.style.height = "auto";
+
+            if (activeChatWith === "AI Assistant") {
+                processAI(userQuery);
+            } else {
+                // Agent to Agent P2P via Firebase
+                db.ref('messages/' + activeChatWith).push({
+                    sender: myAgentName,
+                    text: userQuery,
+                    timestamp: Date.now()
                 });
             }
         }
 
-        // --- Core Message Handler ---
-        function toggleModal(show) { document.getElementById('settings-modal').style.display = show ? 'flex' : 'none'; }
-        
-        function createNewChat() {
-            chatHistory = [];
-            document.getElementById('chat-container').innerHTML = '<div class="message system-msg">Started a clean new session.</div>';
-        }
+        async function processAI(query) {
+            const keys = JSON.parse(localStorage.getItem('nexus_groq_keys') || "[]");
+            const webSearchOn = localStorage.getItem('nexus_web_search_enabled') === "true";
 
-        function addMessageToUI(txt, type) {
-            const chatBox = document.getElementById('chat-container');
-            const div = document.createElement('div');
-            div.className = `message ${type}-message`;
-            div.innerText = txt;
-            chatBox.appendChild(div);
-            chatBox.scrollTop = chatBox.scrollHeight;
-        }
+            if (keys.length === 0) {
+                addMessageUI("Error: No Groq Keys configured. Please go to Settings.", "ai-msg");
+                return;
+            }
 
-        async function sendMessage() {
-            const input = document.getElementById('chat-input');
-            const query = input.value.trim();
-            const savedKeys = JSON.parse(localStorage.getItem('nexus_groq_keys') || '[]');
-            const searchEnabled = localStorage.getItem('nexus_web_search_enabled') === 'true';
+            document.getElementById('p-ui').style.display = "block";
+            document.getElementById('p-fill').style.width = "40%";
+            document.getElementById('p-text').innerText = webSearchOn ? "📡 Accessing Web Research Engines..." : "🧠 Processing Query...";
 
-            if(!query) return;
-            if(savedKeys.length === 0) { alert("Add a Groq API key first!"); toggleModal(true); return; }
-
-            addMessageToUI(query, 'user');
-            input.value = '';
-            input.style.height = 'auto';
-
-            document.getElementById('p-box').style.display = 'block';
-            document.getElementById('p-fill').style.width = '50%';
-            
             try {
-                let systemPrompt = "You are Blue Nexus, a highly efficient AI Research Agent. Help user clearly.";
-                if(searchEnabled) systemPrompt += " [Web Search Mode Enabled]: Act as you have browsed latest news to answer this.";
+                let systemPrompt = "You are Blue Nexus AI. Professional Research Agent.";
+                if(webSearchOn) systemPrompt += " You have been enhanced with web research capabilities. Provide depth-focused latest answers.";
 
-                const response = await callGroqWithFallback(query, systemPrompt, savedKeys);
-                addMessageToUI(response, 'ai');
+                const response = await fetchWithFallback(query, systemPrompt, keys);
+                addMessageUI(response, 'ai-msg');
+                document.getElementById('p-fill').style.width = "100%";
             } catch (err) {
-                addMessageToUI("Error: All API Keys exhausted or Invalid Key.", 'ai');
+                addMessageUI("Error: AI Engine Exhausted (Checked all provided API boxes).", 'ai-msg');
             } finally {
-                document.getElementById('p-fill').style.width = '100%';
-                setTimeout(() => document.getElementById('p-box').style.display = 'none', 1000);
+                setTimeout(() => { document.getElementById('p-ui').style.display = "none"; document.getElementById('p-fill').style.width = "0%"; }, 1000);
             }
         }
 
-        async function callGroqWithFallback(prompt, system, keys) {
-            for (let i = currentKeyIdx; i < keys.length; i++) {
+        async function fetchWithFallback(prompt, sys, keys) {
+            for (let i = currentGroqKeyIdx; i < keys.length; i++) {
                 try {
                     const currentKey = keys[i];
-                    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
                         method: 'POST',
                         headers: { 'Authorization': `Bearer ${currentKey}`, 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             model: "llama-3.3-70b-versatile",
-                            messages: [
-                                {role: "system", content: system},
-                                ...chatHistory,
-                                {role: "user", content: prompt}
-                            ]
+                            messages: [{role: "system", content: sys}, ...chatHistory, {role: "user", content: prompt}]
                         })
                     });
 
-                    if (res.ok) {
-                        currentKeyIdx = i; // Store success index
-                        const data = await res.json();
-                        const resultText = data.choices[0].message.content;
-                        chatHistory.push({role: "user", content: prompt}, {role: "assistant", content: resultText});
-                        return resultText;
-                    } else if (res.status === 429) {
-                        console.warn(`Key box ${i+1} limited. Trying next box...`);
+                    if(response.ok) {
+                        currentGroqKeyIdx = i; // Save successful key index
+                        const data = await response.json();
+                        const result = data.choices[0].message.content;
+                        chatHistory.push({role: "user", content: prompt}, {role: "assistant", content: result});
+                        return result;
+                    } else if (response.status === 429) {
+                        console.warn(`Key ${i} limited, trying next...`);
                     }
-                } catch (e) {
-                    console.error("Error with API box:", i, e);
-                }
+                } catch(e) { console.error("Key Error:", e); }
             }
-            currentKeyIdx = 0; // reset
-            throw new Error("API Failure");
+            throw new Error("All Keys Failed");
         }
 
-        // Init Lifecycle
+        // --- Utils & Handlers ---
+        function updatePresence() {
+            const ref = db.ref('presence/' + myAgentName);
+            ref.set({ lastSeen: Date.now(), name: myAgentName });
+            ref.onDisconnect().remove();
+        }
+
+        function listenToPeerMessages() {
+            db.ref('messages/' + myAgentName).on('child_added', (snapshot) => {
+                const data = snapshot.val();
+                if(data.sender === activeChatWith) {
+                    addMessageUI(data.text, 'ai-msg');
+                    snapshot.ref.remove(); // Cleanup DB
+                }
+            });
+        }
+
+        function copyMyAgentLink() {
+            const config = { n: myAgentName };
+            const link = window.location.origin + window.location.pathname + "#" + btoa(JSON.stringify(config));
+            navigator.clipboard.writeText(link);
+            alert("Connection link copied! Give this to another agent.");
+        }
+
+        function toggleModal(show) { document.getElementById('settings-modal').style.display = show ? "flex" : "none"; }
+        
+        function addMessageUI(text, className) {
+            const cont = document.getElementById('chat-container');
+            const div = document.createElement('div');
+            div.className = `message ${className}`;
+            div.innerText = text;
+            cont.appendChild(div);
+            cont.scrollTop = cont.scrollHeight;
+        }
+
+        // Bootstrap
         window.onload = () => {
-            loadSettingsFromStorage();
-            updateFirebaseStatus();
-            setInterval(updateFirebaseStatus, 25000);
-            setInterval(fetchNetworkAgents, 10000);
-            fetchNetworkAgents();
+            loadPersistence();
+            updatePresence();
+            listenToPeerMessages();
+            setInterval(updatePresence, 30000);
         };
 
-        // Listen for Enter key
         document.getElementById('chat-input').addEventListener('keydown', (e) => {
             if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
         });
