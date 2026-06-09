@@ -2,15 +2,22 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blue Nexus AI - Ultimate Research Agent</title>
-    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=yes">
+    <title>Blue Nexus AI - Mobile Research Agent</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     
     <!-- Firebase SDKs -->
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 
     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
         :root {
             --bg-color: #f8fafc;
             --main-white: #ffffff;
@@ -19,422 +26,797 @@
             --light-blue: #eff6ff;
             --text-dark: #0f172a;
             --border-color: #e2e8f0;
-            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
             --status-online: #22c55e;
             --status-offline: #94a3b8;
         }
 
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
-
-        body { background-color: var(--bg-color); color: var(--text-dark); height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+        body {
+            background: var(--bg-color);
+            color: var(--text-dark);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            font-family: 'Inter', sans-serif;
+        }
 
         /* Header */
         header {
-            padding: 15px 25px;
+            padding: 12px 16px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             background: var(--main-white);
             border-bottom: 1px solid var(--border-color);
             z-index: 100;
+            gap: 8px;
+            flex-shrink: 0;
         }
 
-        .btn-new { background: var(--accent-blue); color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.85rem; }
-        .menu-btn { cursor: pointer; padding: 10px 20px; border-radius: 10px; color: white; background: var(--premium-gradient); font-weight: 700; border: none; font-size: 0.85rem; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .btn-new {
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 8px 14px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.75rem;
+            white-space: nowrap;
+        }
 
-        #main-wrapper { display: flex; flex: 1; overflow: hidden; }
+        .logo-mobile {
+            font-weight: 800;
+            font-size: 0.9rem;
+            background: var(--premium-gradient);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            letter-spacing: -0.2px;
+        }
 
-        /* Sidebar - Agent Connect */
+        .header-actions {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .menu-btn, .mobile-dot-btn {
+            background: #f1f5f9;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mobile-dot-btn {
+            font-size: 1.5rem;
+            font-weight: 800;
+            line-height: 1;
+            padding: 4px 12px;
+            background: #eef2ff;
+            color: var(--accent-blue);
+        }
+
+        /* Main wrapper (desktop keeps sidebar, mobile hides sidebar) */
+        #main-wrapper {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* Sidebar - hidden on mobile */
         #network-sidebar {
-            width: 300px;
+            width: 280px;
             background: var(--main-white);
             border-right: 1px solid var(--border-color);
-            display: flex; flex-direction: column; padding: 15px;
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
+            overflow-y: auto;
         }
 
-        .connect-box { background: #f1f5f9; padding: 15px; border-radius: 15px; margin-bottom: 20px; border: 1px solid #e2e8f0; }
-        .connect-box h4 { font-size: 0.85rem; font-weight: 700; color: var(--accent-blue); margin-bottom: 10px; display: flex; align-items: center; gap: 5px; }
-        .c-input { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #cbd5e1; font-size: 0.8rem; outline: none; margin-bottom: 10px; }
-        .btn-c-action { width: 100%; padding: 10px; background: var(--accent-blue); color: white; border: none; border-radius: 8px; font-weight: 600; cursor: pointer; }
-
-        #agent-list { flex: 1; overflow-y: auto; }
-        .agent-card { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; margin-bottom: 8px; cursor: pointer; border: 1px solid transparent; transition: 0.2s; }
-        .agent-card:hover { background: var(--light-blue); }
-        .agent-card.active { border-color: var(--accent-blue); background: var(--light-blue); }
-        .dot { width: 10px; height: 10px; border-radius: 50%; }
-        .online { background: var(--status-online); box-shadow: 0 0 8px var(--status-online); }
-        .offline { background: var(--status-offline); }
-
-        /* Main Chat Window */
-        #chat-window { flex: 1; display: flex; flex-direction: column; position: relative; }
-        #chat-header { padding: 12px 25px; background: white; border-bottom: 1px solid var(--border-color); font-weight: 700; color: #1e293b; display: flex; align-items: center; gap: 10px; }
-
-        #chat-container { flex: 1; overflow-y: auto; padding: 30px 15%; display: flex; flex-direction: column; gap: 20px; }
-        
-        .message { max-width: 80%; padding: 16px 20px; border-radius: 20px; font-size: 0.95rem; line-height: 1.6; animation: slideUp 0.3s; position: relative; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } }
-        
-        .user-msg { align-self: flex-end; background: var(--accent-blue); color: white; border-bottom-right-radius: 2px; box-shadow: 0 10px 15px -3px rgba(37, 99, 235, 0.2); }
-        .ai-msg { align-self: flex-start; background: white; border: 1px solid var(--border-color); border-bottom-left-radius: 2px; box-shadow: var(--shadow); }
-        .sys-msg { align-self: center; font-size: 0.75rem; background: #e2e8f0; color: #475569; padding: 5px 15px; border-radius: 10px; font-weight: 600; }
-
-        /* Settings Modal */
-        #settings-modal {
-            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(15, 23, 42, 0.6); z-index: 1000; justify-content: center; align-items: center; backdrop-filter: blur(5px);
+        /* Chat Window */
+        #chat-window {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: var(--bg-color);
+            overflow: hidden;
         }
-        .modal-content { background: white; width: 90%; max-width: 550px; padding: 30px; border-radius: 25px; max-height: 90vh; overflow-y: auto; }
-        .modal-content h3 { margin-bottom: 15px; font-weight: 800; color: #1e293b; }
 
-        .input-group { margin-bottom: 15px; }
-        .input-group label { display: block; font-size: 0.8rem; font-weight: 700; margin-bottom: 5px; color: #64748b; }
-        .st-input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; outline: none; font-size: 0.85rem; }
-        
-        /* Toggle Switch */
-        .switch-row { display: flex; align-items: center; justify-content: space-between; background: #f8fafc; padding: 12px; border-radius: 12px; margin: 10px 0; border: 1px solid #e2e8f0; }
-        .switch { position: relative; display: inline-block; width: 50px; height: 26px; }
-        .switch input { opacity: 0; width: 0; height: 0; }
-        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #ccc; transition: .4s; border-radius: 34px; }
-        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; background-color: white; transition: .4s; border-radius: 50%; }
-        input:checked + .slider { background: var(--premium-gradient); }
-        input:checked + .slider:before { transform: translateX(24px); }
+        #chat-header {
+            padding: 12px 20px;
+            background: white;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 700;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
 
-        /* Premium Input Area */
-        #input-area { padding: 25px 15%; background: var(--bg-color); border-top: 1px solid #e2e8f0; }
-        .input-card { background: white; border-radius: 24px; padding: 12px 20px; display: flex; align-items: center; gap: 15px; border: 1px solid var(--border-color); box-shadow: var(--shadow); }
-        #chat-input { flex: 1; border: none; outline: none; font-size: 1rem; background: transparent; resize: none; min-height: 24px; max-height: 150px; }
-        
+        #chat-container {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .message {
+            max-width: 85%;
+            padding: 14px 18px;
+            border-radius: 24px;
+            font-size: 0.9rem;
+            line-height: 1.45;
+            animation: slideUp 0.2s ease;
+            word-wrap: break-word;
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(8px);}
+        }
+
+        .user-msg {
+            align-self: flex-end;
+            background: var(--accent-blue);
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        .ai-msg {
+            align-self: flex-start;
+            background: white;
+            border: 1px solid var(--border-color);
+            border-bottom-left-radius: 4px;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .sys-msg {
+            align-self: center;
+            font-size: 0.7rem;
+            background: #e2e8f0;
+            color: #334155;
+            padding: 6px 14px;
+            border-radius: 30px;
+            max-width: 90%;
+        }
+
+        /* Input Area */
+        #input-area {
+            padding: 12px 16px 20px;
+            background: var(--bg-color);
+            border-top: 1px solid #e2e8f0;
+            flex-shrink: 0;
+        }
+
+        .input-card {
+            background: white;
+            border-radius: 32px;
+            padding: 8px 12px;
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02);
+        }
+
+        #chat-input {
+            flex: 1;
+            border: none;
+            outline: none;
+            font-size: 0.95rem;
+            background: transparent;
+            resize: none;
+            max-height: 120px;
+            font-family: 'Inter', sans-serif;
+            padding: 10px 0;
+        }
+
         .premium-btn {
-            background: var(--premium-gradient); color: white; border: none; padding: 14px 28px; border-radius: 16px;
-            font-weight: 800; cursor: pointer; transition: 0.3s; font-size: 0.95rem; text-transform: uppercase; letter-spacing: 0.5px;
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+            background: var(--premium-gradient);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 40px;
+            font-weight: 700;
+            font-size: 0.8rem;
+            cursor: pointer;
+            white-space: nowrap;
+            box-shadow: 0 2px 8px rgba(37,99,235,0.3);
         }
-        .premium-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(37, 99, 235, 0.4); filter: brightness(1.1); }
 
-        /* Progress Bar */
-        .progress-ui { display: none; margin-bottom: 15px; }
-        .p-bar { height: 5px; background: #e2e8f0; border-radius: 10px; overflow: hidden; }
-        .p-fill { height: 100%; background: var(--premium-gradient); width: 0%; transition: 0.4s; }
+        .progress-ui {
+            display: none;
+            margin-bottom: 12px;
+        }
 
-        @media (max-width: 768px) { #network-sidebar { display: none; } #chat-container, #input-area { padding: 15px; } }
+        .p-bar {
+            height: 4px;
+            background: #e2e8f0;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+
+        .p-fill {
+            height: 100%;
+            background: var(--premium-gradient);
+            width: 0%;
+            transition: 0.3s;
+        }
+
+        /* Mobile Link Menu Overlay (3-dot menu) */
+        .mobile-menu-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(6px);
+            z-index: 2000;
+            align-items: flex-end;
+            justify-content: center;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .mobile-menu-card {
+            background: white;
+            width: 100%;
+            max-width: 500px;
+            border-radius: 28px 28px 0 0;
+            padding: 24px 20px 30px;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.15);
+            animation: slideUpModal 0.25s ease;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
+
+        @keyframes slideUpModal {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .menu-section {
+            margin-bottom: 28px;
+        }
+
+        .menu-title {
+            font-weight: 800;
+            font-size: 1rem;
+            color: #0f172a;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border-left: 3px solid var(--accent-blue);
+            padding-left: 12px;
+        }
+
+        .mobile-link-input {
+            width: 100%;
+            padding: 14px;
+            border: 1px solid #cbd5e1;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            margin-bottom: 12px;
+            background: #f9fafb;
+        }
+
+        .mobile-action-btn {
+            width: 100%;
+            background: var(--accent-blue);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 40px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+
+        .mobile-outline-btn {
+            background: #f1f5f9;
+            color: #1e293b;
+            border: 1px solid #e2e8f0;
+        }
+
+        .agent-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f8fafc;
+            padding: 12px 16px;
+            border-radius: 20px;
+            margin-bottom: 8px;
+            border: 1px solid #eef2ff;
+        }
+
+        .agent-name {
+            font-weight: 600;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .chat-switch-btn {
+            background: var(--premium-gradient);
+            border: none;
+            padding: 6px 14px;
+            border-radius: 30px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.7rem;
+            cursor: pointer;
+        }
+
+        .close-menu-btn {
+            background: #eef2ff;
+            color: #334155;
+            width: 100%;
+            padding: 12px;
+            border-radius: 40px;
+            font-weight: 600;
+            margin-top: 15px;
+            border: none;
+        }
+
+        /* Agent dot online/offline */
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        /* Responsive tuning */
+        @media (max-width: 768px) {
+            #network-sidebar {
+                display: none;
+            }
+            #chat-container {
+                padding: 16px 12px;
+            }
+            .message {
+                max-width: 90%;
+                font-size: 0.85rem;
+                padding: 12px 16px;
+            }
+            .premium-btn {
+                padding: 8px 16px;
+                font-size: 0.75rem;
+            }
+            .logo-mobile {
+                font-size: 0.85rem;
+            }
+        }
+
+        /* For desktop, 3-dot menu also works but fine */
+        @media (min-width: 769px) {
+            .mobile-menu-overlay {
+                align-items: center;
+            }
+            .mobile-menu-card {
+                border-radius: 32px;
+                max-width: 450px;
+                margin: 20px;
+            }
+        }
+
+        .agent-card-sidebar {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px;
+            border-radius: 14px;
+            margin-bottom: 6px;
+            cursor: pointer;
+        }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="logo-area"><button class="btn-new" onclick="location.reload()">New Session</button></div>
-        <div style="font-weight: 800; color: var(--accent-blue); letter-spacing: 1px;">BLUE NEXUS AI PRO</div>
-        <button class="menu-btn" onclick="toggleModal(true)">⚙️ Settings</button>
-    </header>
-
-    <div id="main-wrapper">
-        <!-- Sidebar Connect Section -->
-        <aside id="network-sidebar">
-            <div class="connect-box">
-                <h4>🔗 Agent Connect</h4>
-                <input type="text" id="peer-link-input" class="c-input" placeholder="Paste link to connect...">
-                <button class="btn-c-action" onclick="connectToPeer()">Connect to Peer</button>
-            </div>
-            
-            <div style="margin-bottom: 10px; font-weight: 800; font-size: 0.75rem; color: #94a3b8; text-transform: uppercase;">Connected Network</div>
-            <div id="agent-list">
-                <!-- Live Agents and Peers appear here -->
-            </div>
-
-            <button onclick="copyMyAgentLink()" style="margin-top: 20px; width: 100%; border: 2px dashed #cbd5e1; background: none; color: #64748b; padding: 12px; border-radius: 12px; font-weight: 700; cursor: pointer; font-size: 0.8rem;">
-                📋 Share My Connect Link
-            </button>
-        </aside>
-
-        <!-- Main Window -->
-        <main id="chat-window">
-            <div id="chat-header">🌐 <span id="current-chat-target">AI Research Engine</span></div>
-            <div id="chat-container">
-                <div class="message ai-msg">
-                    হ্যালো! আমি আপনার নেক্সাস এজেন্ট। চ্যাট শুরু করার আগে আপনার <b>Settings</b> থেকে এক বা একাধিক <b>Groq Key</b> এবং প্রয়োজন হলে <b>Search API Key</b> সেট করে নিন।
-                </div>
-            </div>
-        </main>
+<header>
+    <button class="btn-new" onclick="location.reload()">⟳ New</button>
+    <div class="logo-mobile">BLUE NEXUS AI</div>
+    <div class="header-actions">
+        <button class="menu-btn" onclick="toggleModal(true)">⚙️</button>
+        <button class="mobile-dot-btn" id="threeDotMenuBtn">⋮</button>
     </div>
+</header>
 
-    <!-- Settings Modal -->
-    <div id="settings-modal">
-        <div class="modal-content">
-            <h3>System Settings</h3>
-            
-            <div class="input-group">
-                <label>My Agent Name</label>
-                <input type="text" id="st-agent-name" class="st-input" placeholder="Agent 007">
-            </div>
+<div id="main-wrapper">
+    <!-- Sidebar (Desktop) -->
+    <aside id="network-sidebar">
+        <div class="connect-box" style="background:#f1f5f9; padding:14px; border-radius:20px; margin-bottom:20px;">
+            <h4 style="font-size:0.8rem;">🔗 Agent Connect</h4>
+            <input type="text" id="peer-link-input" class="c-input" placeholder="Paste connect link..." style="width:100%; padding:10px; border-radius:12px; border:1px solid #cbd5e1; margin-bottom:8px;">
+            <button class="btn-c-action" onclick="connectToPeerFromSidebar()" style="background:var(--accent-blue); color:white; border:none; padding:10px; border-radius:40px; width:100%; font-weight:bold;">Connect</button>
+        </div>
+        <div style="margin-bottom: 10px; font-weight:800; font-size:0.7rem;">🌐 NETWORK AGENTS</div>
+        <div id="agent-list"></div>
+        <button onclick="copyMyAgentLink()" style="margin-top:20px; width:100%; background:#f8fafc; border:2px dashed #cbd5e1; padding:12px; border-radius:20px; font-weight:700;">📋 Share My Link</button>
+    </aside>
 
-            <div class="input-group">
-                <label>Groq API Keys (Multiple Keys: One per line)</label>
-                <textarea id="st-groq-keys" class="st-input" style="height: 60px; resize: none;" placeholder="gsk_xxxx..."></textarea>
-                <p style="font-size: 0.65rem; color: #ef4444; margin-top: 4px;">* একটার লিমিট শেষ হলে পরের কী দিয়ে অটো চ্যাট চলবে।</p>
-            </div>
-
-            <div class="input-group">
-                <label>Tavily Search API Key</label>
-                <input type="password" id="st-tavily" class="st-input" placeholder="tvly-xxxx...">
-            </div>
-
-            <div class="input-group">
-                <label>Serper Google API Key</label>
-                <input type="password" id="st-serper" class="st-input" placeholder="serper_xxxx...">
-            </div>
-
-            <div class="switch-row">
-                <div style="font-weight: 800; font-size: 0.85rem;">🌐 Web Search Integration</div>
-                <label class="switch">
-                    <input type="checkbox" id="st-web-toggle">
-                    <span class="slider"></span>
-                </label>
-            </div>
-
-            <div style="display: flex; gap: 12px; margin-top: 25px;">
-                <button onclick="saveSettings()" style="flex: 2; padding: 14px; background: var(--premium-gradient); color: white; border: none; border-radius: 12px; font-weight: 800; cursor: pointer;">SAVE CONFIGURATION</button>
-                <button onclick="toggleModal(false)" style="flex: 1; padding: 14px; background: #f1f5f9; border: none; border-radius: 12px; cursor: pointer; font-weight: 600;">CANCEL</button>
+    <main id="chat-window">
+        <div id="chat-header">
+            <span>💬</span> <span id="current-chat-target">AI Research Engine</span>
+        </div>
+        <div id="chat-container">
+            <div class="message ai-msg">
+                🔷 হ্যালো! আমি আপনার নেক্সাস এজেন্ট। <br>Settings থেকে Groq Key দিন। মোবাইলে ⋮ মেনু থেকে লিংক শেয়ার/পেস্ট করুন।
             </div>
         </div>
-    </div>
+    </main>
+</div>
 
-    <!-- Input Section -->
-    <div id="input-area">
-        <div class="progress-ui" id="p-ui">
-            <div class="p-bar"><div class="p-fill" id="p-fill"></div></div>
-            <div style="font-size: 0.7rem; color: var(--accent-blue); margin-top: 5px; font-weight: bold;" id="p-text">Researching in progress...</div>
+<!-- Mobile 3-Dot Menu Overlay (Link Share + Paste + Agent Switcher) -->
+<div id="mobileLinkOverlay" class="mobile-menu-overlay">
+    <div class="mobile-menu-card">
+        <div class="menu-section">
+            <div class="menu-title">🔗 LINK HUB</div>
+            <button id="mobileShareLinkBtn" class="mobile-action-btn">📤 Share My Connection Link</button>
+            <input type="text" id="mobilePasteLinkInput" class="mobile-link-input" placeholder="Paste peer link here...">
+            <button id="mobileConnectBtn" class="mobile-action-btn">🔌 Connect to Peer</button>
         </div>
-        <div class="input-card">
-            <textarea id="chat-input" placeholder="Ask your research question here..." rows="1" oninput="this.style.height='';this.style.height=this.scrollHeight+'px'"></textarea>
-            <button class="premium-btn" onclick="sendMessage()">Send Message</button>
+
+        <div class="menu-section">
+            <div class="menu-title">🤝 MY NETWORK</div>
+            <div id="mobileAgentsListContainer">
+                <!-- Dynamic list of connected agents -->
+                <div style="font-size:0.75rem; color:#64748b; padding:8px;">No connected agents yet</div>
+            </div>
         </div>
+        <button class="close-menu-btn" id="closeMobileMenuBtn">Close</button>
     </div>
+</div>
 
-    <script>
-        // --- Firebase Core ---
-        const firebaseConfig = { databaseURL: "https://ar-ai-195a9-default-rtdb.firebaseio.com" };
-        firebase.initializeApp(firebaseConfig);
-        const db = firebase.database();
+<!-- Settings Modal (unchanged) -->
+<div id="settings-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.6); z-index:1500; justify-content:center; align-items:center; backdrop-filter:blur(4px);">
+    <div class="modal-content" style="background:white; width:90%; max-width:500px; padding:24px; border-radius:32px;">
+        <h3 style="margin-bottom:16px;">⚙️ System Settings</h3>
+        <div class="input-group" style="margin-bottom:14px;"><label>Agent Name</label><input type="text" id="st-agent-name" class="st-input" style="width:100%; padding:12px; border-radius:16px; border:1px solid #cbd5e1;"></div>
+        <div class="input-group" style="margin-bottom:14px;"><label>Groq API Keys (one per line)</label><textarea id="st-groq-keys" style="height:70px; width:100%; padding:10px; border-radius:16px;"></textarea></div>
+        <div class="input-group" style="margin-bottom:14px;"><label>Tavily Key</label><input type="password" id="st-tavily" style="width:100%; padding:12px; border-radius:16px;"></div>
+        <div class="input-group" style="margin-bottom:14px;"><label>Serper Key</label><input type="password" id="st-serper" style="width:100%; padding:12px; border-radius:16px;"></div>
+        <div class="switch-row" style="display:flex; justify-content:space-between; margin:12px 0;"><span>🌐 Web Search</span><label class="switch"><input type="checkbox" id="st-web-toggle"><span class="slider"></span></label></div>
+        <div style="display:flex; gap:12px; margin-top:20px;"><button onclick="saveSettings()" style="flex:2; background:var(--premium-gradient); padding:12px; border-radius:40px; color:white; font-weight:800;">SAVE</button><button onclick="toggleModal(false)" style="flex:1; background:#f1f5f9; border-radius:40px;">CANCEL</button></div>
+    </div>
+</div>
 
-        let chatHistory = [];
-        let myAgentName = "NexusAgent-" + Math.floor(Math.random() * 9999);
-        let activeChatWith = "AI Assistant";
-        let currentGroqKeyIdx = 0;
+<div id="input-area">
+    <div class="progress-ui" id="p-ui">
+        <div class="p-bar"><div class="p-fill" id="p-fill"></div></div>
+        <div style="font-size:0.7rem; color:var(--accent-blue); margin-top:6px;" id="p-text">Processing...</div>
+    </div>
+    <div class="input-card">
+        <textarea id="chat-input" placeholder="Ask anything..." rows="1" style="overflow:hidden;"></textarea>
+        <button class="premium-btn" onclick="sendMessage()">Send</button>
+    </div>
+</div>
 
-        // --- Persistent Configuration ---
-        function loadPersistence() {
-            // Fill Fields from Storage
-            myAgentName = localStorage.getItem('nexus_agent_name') || myAgentName;
-            document.getElementById('st-agent-name').value = myAgentName;
-            document.getElementById('st-groq-keys').value = JSON.parse(localStorage.getItem('nexus_groq_keys') || "[]").join('\n');
-            document.getElementById('st-tavily').value = localStorage.getItem('nexus_tavily_key') || "";
-            document.getElementById('st-serper').value = localStorage.getItem('nexus_serper_key') || "";
-            document.getElementById('st-web-toggle').checked = localStorage.getItem('nexus_web_search_enabled') === "true";
-            
-            renderPeers();
-        }
+<script>
+    // ---------- FIREBASE ----------
+    const firebaseConfig = { databaseURL: "https://ar-ai-195a9-default-rtdb.firebaseio.com" };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
 
-        function saveSettings() {
-            const nameVal = document.getElementById('st-agent-name').value.trim() || myAgentName;
-            const groqVal = document.getElementById('st-groq-keys').value.split('\n').filter(k => k.trim() !== "");
-            const tavilyVal = document.getElementById('st-tavily').value.trim();
-            const serperVal = document.getElementById('st-serper').value.trim();
-            const webToggleVal = document.getElementById('st-web-toggle').checked;
+    let chatHistory = [];
+    let myAgentName = "NexusAgent-" + Math.floor(Math.random() * 9999);
+    let activeChatWith = "AI Assistant";
+    let currentGroqKeyIdx = 0;
 
-            localStorage.setItem('nexus_agent_name', nameVal);
-            localStorage.setItem('nexus_groq_keys', JSON.stringify(groqVal));
-            localStorage.setItem('nexus_tavily_key', tavilyVal);
-            localStorage.setItem('nexus_serper_key', serperVal);
-            localStorage.setItem('nexus_web_search_enabled', webToggleVal);
+    // ----- Helper functions -----
+    function loadPersistence() {
+        myAgentName = localStorage.getItem('nexus_agent_name') || myAgentName;
+        document.getElementById('st-agent-name').value = myAgentName;
+        document.getElementById('st-groq-keys').value = JSON.parse(localStorage.getItem('nexus_groq_keys') || "[]").join('\n');
+        document.getElementById('st-tavily').value = localStorage.getItem('nexus_tavily_key') || "";
+        document.getElementById('st-serper').value = localStorage.getItem('nexus_serper_key') || "";
+        document.getElementById('st-web-toggle').checked = localStorage.getItem('nexus_web_search_enabled') === "true";
+        renderPeersSidebar();
+        renderMobileAgentList(); 
+    }
 
-            myAgentName = nameVal;
-            updatePresence();
-            alert("Settings updated & saved permanently!");
-            toggleModal(false);
-        }
+    function saveSettings() {
+        const nameVal = document.getElementById('st-agent-name').value.trim() || myAgentName;
+        const groqVal = document.getElementById('st-groq-keys').value.split('\n').filter(k => k.trim() !== "");
+        const tavilyVal = document.getElementById('st-tavily').value.trim();
+        const serperVal = document.getElementById('st-serper').value.trim();
+        const webToggleVal = document.getElementById('st-web-toggle').checked;
+        localStorage.setItem('nexus_agent_name', nameVal);
+        localStorage.setItem('nexus_groq_keys', JSON.stringify(groqVal));
+        localStorage.setItem('nexus_tavily_key', tavilyVal);
+        localStorage.setItem('nexus_serper_key', serperVal);
+        localStorage.setItem('nexus_web_search_enabled', webToggleVal);
+        myAgentName = nameVal;
+        updatePresence();
+        alert("Settings saved!");
+        toggleModal(false);
+    }
 
-        // --- Agent Connectivity Logic ---
-        function connectToPeer() {
-            const linkVal = document.getElementById('peer-link-input').value.trim();
-            if(!linkVal) return;
-            try {
-                const encodedData = linkVal.split('#')[1];
-                const config = JSON.parse(atob(encodedData));
-                const remoteName = config.n;
-                if(remoteName === myAgentName) return alert("You can't connect to yourself!");
-
-                let currentPeers = JSON.parse(localStorage.getItem('nexus_connections') || "[]");
-                if(!currentPeers.includes(remoteName)) {
-                    currentPeers.push(remoteName);
-                    localStorage.setItem('nexus_connections', JSON.stringify(currentPeers));
-                    addMessageUI(`System: Agent connected - ${remoteName}`, 'sys-msg');
-                }
-                renderPeers();
-                document.getElementById('peer-link-input').value = "";
-            } catch(e) { alert("Invalid connection link!"); }
-        }
-
-        function renderPeers() {
-            const listEl = document.getElementById('agent-list');
-            listEl.innerHTML = "";
-
-            // Standard AI Row
-            const aiCard = document.createElement('div');
-            aiCard.className = `agent-card ${activeChatWith === 'AI Assistant' ? 'active' : ''}`;
-            aiCard.innerHTML = `<div class="dot online"></div><div style="font-weight: 700;">🤖 Research Assistant</div>`;
-            aiCard.onclick = () => switchChat('AI Assistant');
-            listEl.appendChild(aiCard);
-
-            // Saved Peers Row
-            const peers = JSON.parse(localStorage.getItem('nexus_connections') || "[]");
-            peers.forEach(peerName => {
-                const pCard = document.createElement('div');
-                pCard.className = `agent-card ${activeChatWith === peerName ? 'active' : ''}`;
-                pCard.innerHTML = `<div id="dot-${peerName}" class="dot offline"></div><div style="font-weight: 700;">👤 ${peerName}</div>`;
-                pCard.onclick = () => switchChat(peerName);
-                listEl.appendChild(pCard);
-
-                // Online tracking
-                db.ref('presence/' + peerName).on('value', (snap) => {
-                    const d = document.getElementById('dot-' + peerName);
-                    if(d) {
-                        const isLive = snap.val() && (Date.now() - snap.val().lastSeen < 60000);
-                        d.className = isLive ? "dot online" : "dot offline";
-                    }
-                });
-            });
-        }
-
-        function switchChat(name) {
-            activeChatWith = name;
-            document.getElementById('current-chat-target').innerText = name;
-            chatHistory = []; // Reset visual history for simple local view
-            document.getElementById('chat-container').innerHTML = `<div class="sys-msg">Active Chat: ${name}</div>`;
-            renderPeers();
-        }
-
-        // --- Core Message & AI Logic ---
-        async function sendMessage() {
-            const inputField = document.getElementById('chat-input');
-            const userQuery = inputField.value.trim();
-            if(!userQuery) return;
-
-            addMessageUI(userQuery, 'user-msg');
-            inputField.value = "";
-            inputField.style.height = "auto";
-
-            if (activeChatWith === "AI Assistant") {
-                processAI(userQuery);
+    // Universal connect logic using link
+    function connectWithLink(linkText) {
+        if(!linkText) return false;
+        try {
+            const encodedData = linkText.split('#')[1];
+            const config = JSON.parse(atob(encodedData));
+            const remoteName = config.n;
+            if(remoteName === myAgentName) { alert("Cannot connect to yourself"); return false; }
+            let currentPeers = JSON.parse(localStorage.getItem('nexus_connections') || "[]");
+            if(!currentPeers.includes(remoteName)) {
+                currentPeers.push(remoteName);
+                localStorage.setItem('nexus_connections', JSON.stringify(currentPeers));
+                addMessageUI(`✅ Connected to agent: ${remoteName}`, 'sys-msg');
+                renderPeersSidebar();
+                renderMobileAgentList();
             } else {
-                // Agent to Agent P2P via Firebase
-                db.ref('messages/' + activeChatWith).push({
-                    sender: myAgentName,
-                    text: userQuery,
-                    timestamp: Date.now()
-                });
+                addMessageUI(`Already connected to ${remoteName}`, 'sys-msg');
             }
-        }
+            return true;
+        } catch(e) { alert("Invalid connection link"); return false; }
+    }
 
-        async function processAI(query) {
-            const keys = JSON.parse(localStorage.getItem('nexus_groq_keys') || "[]");
-            const webSearchOn = localStorage.getItem('nexus_web_search_enabled') === "true";
+    // For sidebar existing connect button
+    function connectToPeerFromSidebar() {
+        const linkVal = document.getElementById('peer-link-input').value.trim();
+        if(connectWithLink(linkVal)) document.getElementById('peer-link-input').value = "";
+    }
 
-            if (keys.length === 0) {
-                addMessageUI("Error: No Groq Keys configured. Please go to Settings.", "ai-msg");
-                return;
-            }
+    function copyMyAgentLink() {
+        const config = { n: myAgentName };
+        const link = window.location.origin + window.location.pathname + "#" + btoa(JSON.stringify(config));
+        navigator.clipboard.writeText(link);
+        alert("🔗 Agent link copied!\nShare with others to connect.");
+    }
 
-            document.getElementById('p-ui').style.display = "block";
-            document.getElementById('p-fill').style.width = "40%";
-            document.getElementById('p-text').innerText = webSearchOn ? "📡 Accessing Web Research Engines..." : "🧠 Processing Query...";
-
-            try {
-                let systemPrompt = "You are Blue Nexus AI. Professional Research Agent.";
-                if(webSearchOn) systemPrompt += " You have been enhanced with web research capabilities. Provide depth-focused latest answers.";
-
-                const response = await fetchWithFallback(query, systemPrompt, keys);
-                addMessageUI(response, 'ai-msg');
-                document.getElementById('p-fill').style.width = "100%";
-            } catch (err) {
-                addMessageUI("Error: AI Engine Exhausted (Checked all provided API boxes).", 'ai-msg');
-            } finally {
-                setTimeout(() => { document.getElementById('p-ui').style.display = "none"; document.getElementById('p-fill').style.width = "0%"; }, 1000);
-            }
-        }
-
-        async function fetchWithFallback(prompt, sys, keys) {
-            for (let i = currentGroqKeyIdx; i < keys.length; i++) {
-                try {
-                    const currentKey = keys[i];
-                    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                        method: 'POST',
-                        headers: { 'Authorization': `Bearer ${currentKey}`, 'Content-Type': 'application/json' },
-                        body: JSON.stringify({
-                            model: "llama-3.3-70b-versatile",
-                            messages: [{role: "system", content: sys}, ...chatHistory, {role: "user", content: prompt}]
-                        })
-                    });
-
-                    if(response.ok) {
-                        currentGroqKeyIdx = i; // Save successful key index
-                        const data = await response.json();
-                        const result = data.choices[0].message.content;
-                        chatHistory.push({role: "user", content: prompt}, {role: "assistant", content: result});
-                        return result;
-                    } else if (response.status === 429) {
-                        console.warn(`Key ${i} limited, trying next...`);
-                    }
-                } catch(e) { console.error("Key Error:", e); }
-            }
-            throw new Error("All Keys Failed");
-        }
-
-        // --- Utils & Handlers ---
-        function updatePresence() {
-            const ref = db.ref('presence/' + myAgentName);
-            ref.set({ lastSeen: Date.now(), name: myAgentName });
-            ref.onDisconnect().remove();
-        }
-
-        function listenToPeerMessages() {
-            db.ref('messages/' + myAgentName).on('child_added', (snapshot) => {
-                const data = snapshot.val();
-                if(data.sender === activeChatWith) {
-                    addMessageUI(data.text, 'ai-msg');
-                    snapshot.ref.remove(); // Cleanup DB
+    // Render connected agents list (desktop)
+    function renderPeersSidebar() {
+        const listEl = document.getElementById('agent-list');
+        listEl.innerHTML = "";
+        const aiDiv = document.createElement('div');
+        aiDiv.className = `agent-card-sidebar ${activeChatWith === 'AI Assistant' ? 'active' : ''}`;
+        aiDiv.style.background = activeChatWith === 'AI Assistant' ? '#eff6ff' : 'transparent';
+        aiDiv.style.borderRadius = '14px';
+        aiDiv.style.padding = '10px';
+        aiDiv.style.cursor = 'pointer';
+        aiDiv.innerHTML = `<div style="display:flex; gap:10px; align-items:center;"><div class="dot online"></div><strong>🤖 Research Assistant</strong></div>`;
+        aiDiv.onclick = () => switchChat('AI Assistant');
+        listEl.appendChild(aiDiv);
+        
+        const peers = JSON.parse(localStorage.getItem('nexus_connections') || "[]");
+        peers.forEach(peer => {
+            const card = document.createElement('div');
+            card.className = `agent-card-sidebar ${activeChatWith === peer ? 'active' : ''}`;
+            card.style.background = activeChatWith === peer ? '#eff6ff' : 'transparent';
+            card.style.padding = '10px';
+            card.style.borderRadius = '14px';
+            card.style.marginBottom = '6px';
+            card.style.cursor = 'pointer';
+            card.innerHTML = `<div style="display:flex; justify-content:space-between; align-items:center;"><div style="display:flex; gap:8px;"><span id="dot-${peer}" class="dot offline"></span><span>👤 ${peer}</span></div></div>`;
+            card.onclick = () => switchChat(peer);
+            listEl.appendChild(card);
+            // presence
+            db.ref('presence/' + peer).on('value', (snap) => {
+                const dotSpan = document.getElementById('dot-' + peer);
+                if(dotSpan) {
+                    const live = snap.val() && (Date.now() - snap.val().lastSeen < 60000);
+                    dotSpan.className = live ? "dot online" : "dot offline";
                 }
             });
-        }
-
-        function copyMyAgentLink() {
-            const config = { n: myAgentName };
-            const link = window.location.origin + window.location.pathname + "#" + btoa(JSON.stringify(config));
-            navigator.clipboard.writeText(link);
-            alert("Connection link copied! Give this to another agent.");
-        }
-
-        function toggleModal(show) { document.getElementById('settings-modal').style.display = show ? "flex" : "none"; }
-        
-        function addMessageUI(text, className) {
-            const cont = document.getElementById('chat-container');
-            const div = document.createElement('div');
-            div.className = `message ${className}`;
-            div.innerText = text;
-            cont.appendChild(div);
-            cont.scrollTop = cont.scrollHeight;
-        }
-
-        // Bootstrap
-        window.onload = () => {
-            loadPersistence();
-            updatePresence();
-            listenToPeerMessages();
-            setInterval(updatePresence, 30000);
-        };
-
-        document.getElementById('chat-input').addEventListener('keydown', (e) => {
-            if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
         });
-    </script>
+    }
+
+    // Mobile agent list render inside 3-dot menu
+    function renderMobileAgentList() {
+        const container = document.getElementById('mobileAgentsListContainer');
+        if(!container) return;
+        const peers = JSON.parse(localStorage.getItem('nexus_connections') || "[]");
+        if(peers.length === 0) {
+            container.innerHTML = `<div style="font-size:0.75rem; color:#64748b; padding:8px;">✨ No connected agents. Use "Connect to Peer" above.</div>`;
+            return;
+        }
+        container.innerHTML = "";
+        peers.forEach(peer => {
+            const agentDiv = document.createElement('div');
+            agentDiv.className = "agent-item";
+            agentDiv.innerHTML = `
+                <div class="agent-name"><span id="mobileDot-${peer}" class="dot offline"></span> ${peer}</div>
+                <button class="chat-switch-btn" data-peer="${peer}">Chat</button>
+            `;
+            const chatBtn = agentDiv.querySelector('.chat-switch-btn');
+            chatBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                switchChat(peer);
+                document.getElementById('mobileLinkOverlay').style.display = 'none';
+            });
+            container.appendChild(agentDiv);
+            // online status
+            db.ref('presence/' + peer).on('value', (snap) => {
+                const dotElem = document.getElementById(`mobileDot-${peer}`);
+                if(dotElem) {
+                    const isLive = snap.val() && (Date.now() - snap.val().lastSeen < 60000);
+                    dotElem.className = isLive ? "dot online" : "dot offline";
+                }
+            });
+        });
+    }
+
+    function switchChat(name) {
+        activeChatWith = name;
+        document.getElementById('current-chat-target').innerText = name;
+        // Clear conversation UI but keep history local? simple reset display
+        const container = document.getElementById('chat-container');
+        container.innerHTML = `<div class="sys-msg">Chatting with ${name}</div>`;
+        chatHistory = [];
+        renderPeersSidebar();
+        // update mobile agent list highlight maybe
+        renderMobileAgentList();
+    }
+
+    function addMessageUI(text, className) {
+        const cont = document.getElementById('chat-container');
+        const div = document.createElement('div');
+        div.className = `message ${className}`;
+        div.innerText = text;
+        cont.appendChild(div);
+        cont.scrollTop = cont.scrollHeight;
+    }
+
+    // AI + Groq fallback core
+    async function processAI(query) {
+        const keys = JSON.parse(localStorage.getItem('nexus_groq_keys') || "[]");
+        const webSearchOn = localStorage.getItem('nexus_web_search_enabled') === "true";
+        if (keys.length === 0) {
+            addMessageUI("⚠️ No Groq API keys. Please configure in Settings.", "ai-msg");
+            return;
+        }
+        document.getElementById('p-ui').style.display = "block";
+        document.getElementById('p-fill').style.width = "30%";
+        document.getElementById('p-text').innerText = webSearchOn ? "🌐 Web research mode active ..." : "🧠 AI thinking...";
+        try {
+            let sysPrompt = "You are Blue Nexus AI, a professional research assistant. Provide accurate, deep answers.";
+            if(webSearchOn) sysPrompt += " Use your internal knowledge, but prioritize factual, up-to-date responses.";
+            const response = await fetchWithGroqFallback(query, sysPrompt, keys);
+            addMessageUI(response, 'ai-msg');
+            document.getElementById('p-fill').style.width = "100%";
+        } catch(err) {
+            addMessageUI("❌ AI Error: All Groq keys exhausted or invalid. Check keys.", 'ai-msg');
+        } finally {
+            setTimeout(() => { document.getElementById('p-ui').style.display = "none"; document.getElementById('p-fill').style.width = "0%"; }, 1000);
+        }
+    }
+
+    async function fetchWithGroqFallback(prompt, sys, keys) {
+        for (let i = currentGroqKeyIdx; i < keys.length; i++) {
+            try {
+                const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${keys[i]}`, 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        model: "llama-3.3-70b-versatile",
+                        messages: [{role: "system", content: sys}, ...chatHistory, {role: "user", content: prompt}]
+                    })
+                });
+                if(res.ok) {
+                    const data = await res.json();
+                    const reply = data.choices[0].message.content;
+                    chatHistory.push({role: "user", content: prompt}, {role: "assistant", content: reply});
+                    currentGroqKeyIdx = i;
+                    return reply;
+                } else if(res.status === 429) { continue; }
+                else { console.warn(`Key ${i} failed`); }
+            } catch(e) { console.warn(e); }
+        }
+        throw new Error("All keys failed");
+    }
+
+    async function sendMessage() {
+        const inputField = document.getElementById('chat-input');
+        const query = inputField.value.trim();
+        if(!query) return;
+        addMessageUI(query, 'user-msg');
+        inputField.value = "";
+        inputField.style.height = "auto";
+        if(activeChatWith === "AI Assistant") {
+            await processAI(query);
+        } else {
+            // P2P message to remote agent
+            db.ref('messages/' + activeChatWith).push({
+                sender: myAgentName,
+                text: query,
+                timestamp: Date.now()
+            });
+            addMessageUI(`📡 Message sent to ${activeChatWith}`, 'sys-msg');
+        }
+    }
+
+    function listenToPeerMessages() {
+        db.ref('messages/' + myAgentName).on('child_added', (snap) => {
+            const data = snap.val();
+            if(data.sender === activeChatWith || activeChatWith === data.sender) {
+                addMessageUI(data.text, 'ai-msg');
+                snap.ref.remove();
+            } else if(activeChatWith !== "AI Assistant") {
+                // also show notification if needed
+                addMessageUI(`📨 New from ${data.sender}: ${data.text.substring(0,50)}...`, 'sys-msg');
+                snap.ref.remove();
+            } else {
+                snap.ref.remove();
+            }
+        });
+    }
+
+    function updatePresence() {
+        const ref = db.ref('presence/' + myAgentName);
+        ref.set({ lastSeen: Date.now(), name: myAgentName });
+        ref.onDisconnect().remove();
+    }
+
+    // Mobile 3-dot menu handlers
+    function initMobileMenu() {
+        const overlay = document.getElementById('mobileLinkOverlay');
+        const openBtn = document.getElementById('threeDotMenuBtn');
+        const closeBtn = document.getElementById('closeMobileMenuBtn');
+        const shareBtn = document.getElementById('mobileShareLinkBtn');
+        const connectBtn = document.getElementById('mobileConnectBtn');
+        const pasteInput = document.getElementById('mobilePasteLinkInput');
+        
+        openBtn.addEventListener('click', () => {
+            renderMobileAgentList();
+            overlay.style.display = 'flex';
+        });
+        closeBtn.addEventListener('click', () => overlay.style.display = 'none');
+        overlay.addEventListener('click', (e) => { if(e.target === overlay) overlay.style.display = 'none'; });
+        shareBtn.addEventListener('click', () => { copyMyAgentLink(); overlay.style.display = 'none'; });
+        connectBtn.addEventListener('click', () => {
+            const linkVal = pasteInput.value.trim();
+            if(connectWithLink(linkVal)) {
+                pasteInput.value = "";
+                renderMobileAgentList();
+                renderPeersSidebar();
+                overlay.style.display = 'none';
+            } else {
+                alert("Invalid link format");
+            }
+        });
+    }
+
+    function toggleModal(show) {
+        document.getElementById('settings-modal').style.display = show ? "flex" : "none";
+    }
+
+    // auto-resize textarea
+    document.getElementById('chat-input')?.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 150) + 'px';
+    });
+    document.getElementById('chat-input')?.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+    });
+
+    window.onload = () => {
+        loadPersistence();
+        updatePresence();
+        listenToPeerMessages();
+        setInterval(updatePresence, 30000);
+        initMobileMenu();
+        // refresh periodically
+        setInterval(() => { renderPeersSidebar(); renderMobileAgentList(); }, 5000);
+    };
+</script>
 </body>
 </html>
