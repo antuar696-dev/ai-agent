@@ -246,4 +246,110 @@
                     method: 'POST',
                     mode: 'no-cors',
                     headers: {'Content-Type': 'text/plain'},
-                    body: JSON.stringify({agent: "ANTU AR", userMessage: userMsg ||
+                    body: JSON.stringify({agent: "ANTU AR", userMessage: userMsg || "[Image]", aiReply: aiMsg})
+                });
+            } catch (e) { console.error("Sync failed"); }
+        }
+
+        async function sendMessage() {
+            const inputField = document.getElementById('chat-input');
+            const text = inputField.value.trim();
+            const keys = document.getElementById('groq-keys').value.split('\n').filter(k => k.trim());
+
+            if(!text && !base64Image) return;
+            if(keys.length === 0) { alert("Please set API Keys in Settings!"); toggleModal(true); return; }
+
+            const userTextForSync = text;
+            addMessage(text, 'user', base64Image);
+            inputField.value = '';
+            inputField.style.height = 'auto';
+
+            try {
+                const response = await callGroqWithFallback(text, base64Image, keys);
+                addMessage(response, 'ai');
+                syncToGoogleSheet(userTextForSync, response);
+            } catch (err) {
+                addMessage("Error: API Keys are not working or invalid.", 'ai');
+            }
+            removeImage();
+        }
+
+        async function callGroqWithFallback(prompt, img, keys) {
+            const customSystem = document.getElementById('system-prompt').value || "You are Antu AR, a helpful assistant.";
+            for (let i = currentKeyIndex; i < keys.length; i++) {
+                try {
+                    const key = keys[i].trim();
+                    const model = img ? "llama-3.2-11b-vision-preview" : "llama-3.3-70b-versatile";
+                    const payload = {
+                        model: model,
+                        messages: img ? 
+                        [{role: "user", content: [{type: "text", text: prompt || "Analyze image"}, {type: "image_url", image_url: {url: img}}]}] :
+                        [{role: "system", content: customSystem}, ...chatHistory, {role: "user", content: prompt}]
+                    };
+                    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json'},
+                        body: JSON.stringify(payload)
+                    });
+                    if (res.ok) {
+                        currentKeyIndex = i;
+                        const data = await res.json();
+                        const reply = data.choices[0].message.content;
+                        if(!img) chatHistory.push({role: "user", content: prompt}, {role: "assistant", content: reply});
+                        return reply;
+                    }
+                } catch (e) {}
+            }
+            throw new Error("Failed");
+        }
+
+        function addMessage(content, role, img = null) {
+            const container = document.getElementById('chat-container');
+            const div = document.createElement('div');
+            div.className = `message ${role}-message`;
+            if(img) { const i = document.createElement('img'); i.src = img; i.className = 'msg-image'; div.appendChild(i); }
+            if(content) {
+                if(role === 'ai') {
+                    div.innerHTML = marked.parse(content);
+                    div.querySelectorAll('pre code').forEach(block => {
+                        hljs.highlightElement(block);
+                        const btn = document.createElement('button');
+                        btn.innerText = '📋 Copy';
+                        btn.style.cssText = 'position:absolute;top:8px;right:8px;padding:4px 8px;background:#444;color:white;border:none;border-radius:5px;cursor:pointer;font-size:0.7rem;';
+                        btn.onclick = () => { navigator.clipboard.writeText(block.innerText); btn.innerText = '✓ Copied'; setTimeout(()=>btn.innerText='📋 Copy', 2000); };
+                        block.parentElement.appendChild(btn);
+                    });
+                } else { div.innerText = content; }
+            }
+            container.appendChild(div);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        function generateShareLink() {
+            const config = { 
+                g: document.getElementById('groq-keys').value, 
+                t: document.getElementById('tavily-key').value,
+                s: document.getElementById('system-prompt').value 
+            };
+            const link = window.location.origin + window.location.pathname + '#' + btoa(JSON.stringify(config));
+            navigator.clipboard.writeText(link);
+            alert("Sharable configuration link copied!");
+        }
+
+        window.onload = () => {
+            if(window.location.hash) {
+                try {
+                    const config = JSON.parse(atob(window.location.hash.substring(1)));
+                    document.getElementById('groq-keys').value = config.g || '';
+                    document.getElementById('tavily-key').value = config.t || '';
+                    document.getElementById('system-prompt').value = config.s || '';
+                } catch(e) {}
+            }
+        };
+
+        document.getElementById('chat-input').addEventListener('keydown', (e) => {
+            if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+        });
+    </script>
+</body>
+</html>
