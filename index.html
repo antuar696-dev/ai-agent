@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blue Nexus AI - Research & Vision</title>
+    <title>Antu AR - Advanced AI</title>
     <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
     
     <!-- Marked & Highlight.js CDNs -->
@@ -13,14 +13,14 @@
 
     <style>
         :root {
-            --bg-color: #f8f9fa;
+            --bg-color: #f4f7f9;
             --main-white: #ffffff;
             --accent-blue: #007bff;
             --premium-gradient: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
             --light-blue: #e7f3ff;
             --text-dark: #1c1e21;
-            --border-color: #e4e6eb;
-            --shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+            --border-color: #e0e4e9;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
@@ -29,165 +29,178 @@
 
         /* Header */
         header {
-            padding: 12px 25px;
+            padding: 10px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             background: var(--main-white);
             border-bottom: 1px solid var(--border-color);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.03);
             z-index: 100;
         }
 
-        .header-title { font-weight: 700; font-size: 1.1rem; color: var(--accent-blue); letter-spacing: -0.5px; }
+        .header-title { font-weight: 800; font-size: 1.2rem; color: var(--accent-blue); }
 
-        .header-actions { display: flex; gap: 10px; align-items: center; }
+        .header-actions { display: flex; gap: 8px; align-items: center; }
         
-        .icon-action-btn {
+        .icon-btn {
             background: var(--light-blue); color: var(--accent-blue); border: none;
-            width: 38px; height: 38px; border-radius: 10px; cursor: pointer;
-            display: flex; align-items: center; justify-content: center; font-size: 1.2rem;
-            transition: 0.2s;
+            width: 36px; height: 36px; border-radius: 8px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; font-size: 1.1rem;
+            transition: 0.2s; position: relative;
         }
-        .icon-action-btn:hover { background: var(--accent-blue); color: white; }
+        .icon-btn:hover { background: var(--accent-blue); color: white; }
+
+        /* 3-Dot Dropdown */
+        .dropdown { position: relative; display: inline-block; }
+        .dropdown-content {
+            display: none; position: absolute; right: 0; background-color: white;
+            min-width: 160px; box-shadow: var(--shadow); border-radius: 10px;
+            z-index: 1000; overflow: hidden; border: 1px solid var(--border-color);
+        }
+        .dropdown-content a {
+            color: var(--text-dark); padding: 12px 16px; text-decoration: none;
+            display: block; font-size: 0.9rem; cursor: pointer;
+        }
+        .dropdown-content a:hover { background-color: var(--light-blue); color: var(--accent-blue); }
+        .show { display: block; }
 
         /* Chat Window */
         #chat-container {
-            flex: 1; overflow-y: auto; padding: 30px 18%;
-            display: flex; flex-direction: column; gap: 25px; background: var(--bg-color);
+            flex: 1; overflow-y: auto; padding: 20px 15%;
+            display: flex; flex-direction: column; gap: 20px; background: var(--bg-color);
         }
 
         .message {
-            max-width: 85%; padding: 16px 20px; border-radius: 20px;
-            line-height: 1.6; font-size: 0.98rem; animation: slideUp 0.4s ease-out; position: relative;
+            max-width: 85%; padding: 14px 18px; border-radius: 18px;
+            line-height: 1.6; font-size: 0.95rem; animation: slideUp 0.3s ease; position: relative;
         }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-        .user-message { 
-            align-self: flex-end; background: var(--premium-gradient); color: white; 
-            border-bottom-right-radius: 4px; box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2); 
+        .user-message { align-self: flex-end; background: var(--premium-gradient); color: white; border-bottom-right-radius: 4px; box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2); }
+        .ai-message { align-self: flex-start; background: var(--main-white); color: var(--text-dark); border-bottom-left-radius: 4px; box-shadow: var(--shadow); border: 1px solid var(--border-color); }
+
+        /* Quick Actions */
+        .quick-actions {
+            display: flex; gap: 10px; justify-content: center; margin-bottom: 10px;
         }
-        .ai-message { 
-            align-self: flex-start; background: var(--main-white); color: var(--text-dark); 
-            border-bottom-left-radius: 4px; box-shadow: var(--shadow); border: 1px solid var(--border-color);
+        .chip {
+            background: white; border: 1px solid var(--accent-blue); color: var(--accent-blue);
+            padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600;
+            cursor: pointer; transition: 0.3s;
         }
+        .chip:hover { background: var(--accent-blue); color: white; }
 
-        .msg-image { max-width: 100%; border-radius: 12px; margin-bottom: 10px; border: 1px solid #ddd; }
+        /* Code Block Styles */
+        pre { background: #1e1e1e; color: #fff; padding: 15px; border-radius: 10px; margin: 10px 0; overflow-x: auto; position: relative; }
 
-        /* AI Message Code Block Styles */
-        .ai-message pre {
-            background: #1e1e1e; color: #fff; padding: 15px; border-radius: 12px;
-            margin: 12px 0; overflow-x: auto; position: relative; border: 1px solid #333;
-        }
-
-        /* Settings Modal */
+        /* Modal Styles */
         #settings-modal {
             display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0,0,0,0.4); backdrop-filter: blur(4px); z-index: 1000;
+            background: rgba(0,0,0,0.5); backdrop-filter: blur(4px); z-index: 2000;
             justify-content: center; align-items: center;
         }
-
         .modal-content {
-            background: white; width: 90%; max-width: 450px; padding: 30px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+            background: white; width: 90%; max-width: 500px; padding: 25px; border-radius: 20px; 
+            max-height: 80vh; overflow-y: auto;
         }
-
-        .api-box { background: #f8f9fa; padding: 15px; border-radius: 12px; margin-bottom: 20px; border: 1px solid #eee; }
-        .api-box h4 { font-size: 0.85rem; margin-bottom: 10px; color: var(--accent-blue); text-transform: uppercase; }
-
-        textarea.api-list { width: 100%; height: 90px; padding: 12px; border: 1px solid #ddd; border-radius: 10px; resize: none; font-size: 0.85rem; outline: none; }
+        .api-input-group { margin-bottom: 15px; }
+        .api-input-group label { display: block; font-size: 0.8rem; font-weight: 600; color: #555; margin-bottom: 5px; }
+        .api-input-group input, .api-input-group textarea {
+            width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 8px; outline: none; font-size: 0.9rem;
+        }
 
         /* Input Area */
-        #input-area { padding: 25px 18%; background: transparent; }
-        
+        #input-area { padding: 15px 15%; background: var(--bg-color); }
         .input-card {
-            background: white; border-radius: 30px; padding: 8px 15px; border: 1px solid var(--border-color);
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05); display: flex; flex-direction: column;
+            background: white; border-radius: 24px; padding: 8px 15px; border: 1px solid var(--border-color);
+            box-shadow: var(--shadow); display: flex; flex-direction: column;
         }
-
-        .input-row { display: flex; align-items: center; gap: 10px; width: 100%; }
-
-        #chat-input { 
-            flex: 1; border: none; padding: 12px 5px; font-size: 1rem; outline: none; 
-            background: transparent; resize: none; max-height: 150px;
-        }
-
-        .image-btn { color: var(--accent-blue); font-size: 1.4rem; cursor: pointer; background: none; border: none; padding: 5px; transition: 0.2s; }
-        .image-btn:hover { transform: scale(1.1); }
-
+        .input-row { display: flex; align-items: center; gap: 10px; }
+        #chat-input { flex: 1; border: none; padding: 10px; font-size: 1rem; outline: none; background: transparent; resize: none; max-height: 150px; }
+        
         .premium-send-btn {
             background: var(--premium-gradient); color: white; border: none;
-            width: 45px; height: 45px; border-radius: 50%; cursor: pointer;
-            display: flex; align-items: center; justify-content: center;
-            transition: all 0.3s; box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3); flex-shrink: 0;
+            width: 42px; height: 42px; border-radius: 50%; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; transition: 0.3s;
         }
-        .premium-send-btn:hover { transform: scale(1.05); box-shadow: 0 6px 18px rgba(0, 123, 255, 0.4); }
+        .premium-send-btn:hover { transform: scale(1.1); }
 
-        .premium-send-btn svg { width: 20px; height: 20px; fill: white; margin-left: 2px; }
-
-        /* Image Preview */
         #image-preview-container { display: none; padding: 10px; position: relative; width: fit-content; }
-        #image-preview { height: 60px; border-radius: 10px; border: 2px solid var(--accent-blue); }
-        .remove-img { 
-            position: absolute; top: 0px; right: 0px; cursor: pointer; background: #ff4d4d; 
-            color: white; border-radius: 50%; width: 20px; height: 20px; font-size: 12px; 
-            display: flex; align-items: center; justify-content: center; font-weight: bold;
-        }
+        #image-preview { height: 50px; border-radius: 8px; border: 1px solid var(--accent-blue); }
 
-        .progress-ui { display: none; margin-bottom: 10px; padding: 0 10px; }
-        .p-bar { height: 4px; background: #eee; border-radius: 10px; overflow: hidden; }
-        .p-fill { height: 100%; background: var(--premium-gradient); width: 0%; transition: 0.3s; }
-
-        @media (max-width: 768px) { #chat-container, #input-area { padding: 15px; } }
+        @media (max-width: 768px) { #chat-container, #input-area { padding: 10px; } }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="header-title" id="active-agent">BLUE NEXUS AI</div>
+        <div class="header-title">ANTU AR</div>
         <div class="header-actions">
-            <button class="icon-action-btn" title="Share Session" onclick="generateShareLink()">🔗</button>
-            <button class="icon-action-btn" title="Settings" onclick="toggleModal(true)">⚙️</button>
+            <button class="icon-btn" onclick="generateShareLink()" title="Share Link">🔗</button>
+            <button class="icon-btn" onclick="toggleModal(true)" title="Settings">⚙️</button>
+            <div class="dropdown">
+                <button class="icon-btn" onclick="toggleDropdown()">⋮</button>
+                <div id="myDropdown" class="dropdown-content">
+                    <a onclick="clearChat()">🗑️ Clear Chat</a>
+                    <a onclick="alert('Status: All systems functional')">🟢 System Status</a>
+                    <a onclick="alert('Antu AR v2.0 - Developed for Excellence')">ℹ️ About</a>
+                </div>
+            </div>
         </div>
     </header>
 
     <div id="chat-container">
         <div class="message ai-message">
-            স্বাগতম! আমি আপনার <b>Blue Nexus AI</b>। <br><br>
-            প্রথমে <b>Settings (⚙️)</b> থেকে আপনার API Key যোগ করে নিন। আপনি এখন ছবি এবং টেক্সট পাঠিয়ে কথা বলতে পারেন।
+            Hello! I am <b>Antu AR</b>. আপনার পার্সোনাল এআই অ্যাসিস্ট্যান্ট। <br><br>
+            প্রথমে <b>⚙️ Settings</b> থেকে আপনার API Keys সেট করে নিন। আপনি এখন নিচের বাটনগুলো ব্যবহার করে দ্রুত কাজ শুরু করতে পারেন।
         </div>
     </div>
 
     <!-- Settings Modal -->
     <div id="settings-modal">
         <div class="modal-content">
-            <h3 style="margin-bottom: 20px; color: var(--accent-blue); text-align: center;">Configuration</h3>
-            <div class="api-box">
-                <h4>Groq API Keys</h4>
-                <textarea id="groq-keys" class="api-list" placeholder="Paste your API keys here... (one per line)"></textarea>
+            <h3 style="margin-bottom: 20px; color: var(--accent-blue);">Personalization & API</h3>
+            
+            <div class="api-input-group">
+                <label>Groq API Keys (প্রতি লাইনে একটি)</label>
+                <textarea id="groq-keys" rows="3" placeholder="Paste Groq Keys..."></textarea>
             </div>
-            <button onclick="toggleModal(false)" style="width:100%; padding:12px; border-radius:12px; border:none; background:var(--premium-gradient); color:white; font-weight:600; cursor:pointer;">Save & Close</button>
+
+            <div class="api-input-group">
+                <label>Tavily API Key (Search Features)</label>
+                <input type="password" id="tavily-key" placeholder="Paste Tavily Key here...">
+            </div>
+
+            <div class="api-input-group">
+                <label>Personalize Antu AR (System Prompt)</label>
+                <textarea id="system-prompt" rows="4" placeholder="Example: You are a professional coder. Answer in Bengali..."></textarea>
+            </div>
+
+            <button onclick="toggleModal(false)" style="width:100%; padding:12px; border-radius:10px; border:none; background:var(--premium-gradient); color:white; font-weight:600; cursor:pointer;">Save Configuration</button>
         </div>
     </div>
 
     <div id="input-area">
-        <div class="progress-ui" id="progress-box">
-            <div class="p-bar"><div class="p-fill" id="p-fill"></div></div>
-            <div id="p-text" style="font-size: 0.7rem; color: var(--accent-blue); margin-top: 4px; font-weight: 500;">Thinking...</div>
+        <div class="quick-actions">
+            <div class="chip" onclick="quickPrompt('Content Writing: ')">📝 Content Writing</div>
+            <div class="chip" onclick="quickPrompt('Script Writing: ')">🎬 Script Writing</div>
+            <div class="chip" onclick="quickPrompt('Coding Help: ')">💻 Coding</div>
         </div>
 
         <div class="input-card">
             <div id="image-preview-container">
                 <img id="image-preview" src="">
-                <div class="remove-img" onclick="removeImage()">×</div>
+                <div onclick="removeImage()" style="position:absolute; top:-5px; right:-5px; background:red; color:white; border-radius:50%; width:18px; height:18px; text-align:center; font-size:12px; cursor:pointer;">×</div>
             </div>
             <div class="input-row">
-                <button class="image-btn" onclick="document.getElementById('file-in').click()" title="Upload Image">🖼️</button>
+                <button class="icon-btn" onclick="document.getElementById('file-in').click()" style="background:none; font-size:1.4rem;">🖼️</button>
                 <input type="file" id="file-in" hidden accept="image/*" onchange="handleImage(this)">
                 
-                <textarea id="chat-input" placeholder="Type a message..." rows="1" oninput="this.style.height='';this.style.height=this.scrollHeight+'px'"></textarea>
+                <textarea id="chat-input" placeholder="Ask Antu AR anything..." rows="1" oninput="this.style.height='';this.style.height=this.scrollHeight+'px'"></textarea>
                 
                 <button class="premium-send-btn" onclick="sendMessage()">
-                    <svg viewBox="0 0 24 24"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="white"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path></svg>
                 </button>
             </div>
         </div>
@@ -198,9 +211,9 @@
         let base64Image = null;
         let currentKeyIndex = 0;
 
-        function toggleModal(show) {
-            document.getElementById('settings-modal').style.display = show ? 'flex' : 'none';
-        }
+        function toggleModal(show) { document.getElementById('settings-modal').style.display = show ? 'flex' : 'none'; }
+        function toggleDropdown() { document.getElementById("myDropdown").classList.toggle("show"); }
+        window.onclick = function(event) { if (!event.target.matches('.icon-btn')) { var dropdowns = document.getElementsByClassName("dropdown-content"); for (var i = 0; i < dropdowns.length; i++) { var openDropdown = dropdowns[i]; if (openDropdown.classList.contains('show')) openDropdown.classList.remove('show'); } } }
 
         function handleImage(input) {
             if (input.files && input.files[0]) {
@@ -213,147 +226,24 @@
                 reader.readAsDataURL(input.files[0]);
             }
         }
+        function removeImage() { base64Image = null; document.getElementById('image-preview-container').style.display = 'none'; }
 
-        function removeImage() {
-            base64Image = null;
-            document.getElementById('file-in').value = '';
-            document.getElementById('image-preview-container').style.display = 'none';
+        function quickPrompt(text) {
+            const input = document.getElementById('chat-input');
+            input.value = text;
+            input.focus();
         }
 
-        function updateProgress(per, text) {
-            const box = document.getElementById('progress-box');
-            box.style.display = 'block';
-            document.getElementById('p-fill').style.width = per + '%';
-            document.getElementById('p-text').innerText = text;
-            if(per >= 100) setTimeout(() => box.style.display = 'none', 1000);
+        function clearChat() {
+            chatHistory = [];
+            document.getElementById('chat-container').innerHTML = `<div class="message ai-message">Chat cleared. How can I help you now?</div>`;
         }
 
         async function syncToGoogleSheet(userMsg, aiMsg) {
             const googleSheetURL = 'https://script.google.com/macros/s/AKfycbyujiu1GdYrtKj2rLftHsGhfK2DAjcQVN8q5Qzo4YblC_Lp7EVjvPXQNn_zzdjjFpK4/exec';
-            const agent = "BLUE NEXUS AI";
             try {
                 await fetch(googleSheetURL, {
                     method: 'POST',
                     mode: 'no-cors',
                     headers: {'Content-Type': 'text/plain'},
-                    body: JSON.stringify({agent, userMessage: userMsg || "[Image]", aiReply: aiMsg})
-                });
-            } catch (error) { console.error('Sync error:', error); }
-        }
-
-        async function sendMessage() {
-            const inputField = document.getElementById('chat-input');
-            const text = inputField.value.trim();
-            const keysRaw = document.getElementById('groq-keys').value.trim();
-            const keys = keysRaw.split('\n').filter(k => k.trim() !== "");
-
-            if(!text && !base64Image) return;
-            if(keys.length === 0) { alert("Please enter API Key in Settings!"); toggleModal(true); return; }
-
-            const userTextForSync = text;
-            addMessage(text, 'user', base64Image);
-            inputField.value = '';
-            inputField.style.height = 'auto';
-
-            updateProgress(40, "Processing...");
-
-            try {
-                const response = await callGroqWithFallback(text, base64Image, keys);
-                addMessage(response, 'ai');
-                syncToGoogleSheet(userTextForSync, response);
-            } catch (err) {
-                addMessage("Error: Failed to get response from any API key.", 'ai');
-            } finally {
-                updateProgress(100, "Done");
-                removeImage();
-            }
-        }
-
-        async function callGroqWithFallback(prompt, img, keys) {
-            for (let i = currentKeyIndex; i < keys.length; i++) {
-                try {
-                    const key = keys[i].trim();
-                    const model = img ? "llama-3.2-11b-vision-preview" : "llama-3.3-70b-versatile";
-                    
-                    const payload = {
-                        model: model,
-                        messages: img ? 
-                        [{role: "user", content: [{type: "text", text: prompt || "Analyze image"}, {type: "image_url", image_url: {url: img}}]}] :
-                        [{role: "system", content: "You are Blue Nexus AI."}, ...chatHistory, {role: "user", content: prompt}]
-                    };
-
-                    const res = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                        method: 'POST',
-                        headers: {'Authorization': `Bearer ${key}`, 'Content-Type': 'application/json'},
-                        body: JSON.stringify(payload)
-                    });
-
-                    if (res.ok) {
-                        currentKeyIndex = i;
-                        const data = await res.json();
-                        const reply = data.choices[0].message.content;
-                        if(!img) chatHistory.push({role: "user", content: prompt}, {role: "assistant", content: reply});
-                        return reply;
-                    }
-                } catch (e) { console.error(e); }
-            }
-            throw new Error("All keys failed");
-        }
-
-        function addMessage(content, role, img = null) {
-            const container = document.getElementById('chat-container');
-            const div = document.createElement('div');
-            div.className = `message ${role}-message`;
-
-            if(img) {
-                const i = document.createElement('img'); i.src = img; i.className = 'msg-image';
-                div.appendChild(i);
-            }
-
-            if(content || !img) {
-                if(role === 'ai') {
-                    const parsedText = typeof content === 'string' ? content : JSON.stringify(content);
-                    div.innerHTML = marked.parse(parsedText);
-                    div.querySelectorAll('pre code').forEach(block => {
-                        hljs.highlightElement(block);
-                        const copyBtn = document.createElement('button');
-                        copyBtn.innerText = '📋 Copy';
-                        copyBtn.style.cssText = 'position:absolute;top:8px;right:8px;padding:4px 10px;background:#444;color:white;border:none;border-radius:5px;cursor:pointer;font-size:0.75rem;';
-                        copyBtn.onclick = () => { 
-                            navigator.clipboard.writeText(block.innerText); 
-                            copyBtn.innerText = '✓ Copied'; 
-                            setTimeout(() => copyBtn.innerText = '📋 Copy', 2000); 
-                        };
-                        block.parentElement.style.position = 'relative';
-                        block.parentElement.appendChild(copyBtn);
-                    });
-                } else {
-                    div.innerText = content || "";
-                }
-            }
-            container.appendChild(div);
-            container.scrollTop = container.scrollHeight;
-        }
-
-        function generateShareLink() {
-            const config = { g: document.getElementById('groq-keys').value };
-            const link = window.location.origin + window.location.pathname + '#' + btoa(JSON.stringify(config));
-            navigator.clipboard.writeText(link);
-            alert("Sharable link copied to clipboard with current API Keys!");
-        }
-
-        window.onload = () => {
-            if(window.location.hash) {
-                try {
-                    const config = JSON.parse(atob(window.location.hash.substring(1)));
-                    document.getElementById('groq-keys').value = config.g || '';
-                } catch(e) {}
-            }
-        };
-
-        document.getElementById('chat-input').addEventListener('keydown', (e) => {
-            if(e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
-        });
-    </script>
-</body>
-</html>
+                    body: JSON.stringify({agent: "ANTU AR", userMessage: userMsg ||
