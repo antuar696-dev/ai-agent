@@ -215,25 +215,19 @@
             if(per >= 100) setTimeout(() => box.style.display = 'none', 1000);
         }
 
-        // Feature: Sync chat to Google Sheets
+        // Feature: Sync chat to Google Sheets with new URL and options
         async function syncToGoogleSheet(userMsg, aiMsg) {
-            const scriptURL = 'https://script.google.com/macros/s/AKfycbzwsKUDgK7Qgwby5jDsG-lSQ5kNZnB2xOPBI4GlGTYfv8jwVDNQG4PFqa0D9qlI8xC_/exec';
-            const agentName = document.getElementById('active-agent').innerText;
-            
-            const payload = {
-                agent: agentName,
-                userMessage: userMsg || "[Image Only]",
-                aiReply: aiMsg
-            };
+            const googleSheetURL = 'https://script.google.com/macros/s/AKfycbyujiu1GdYrtKj2rLftHsGhfK2DAjcQVN8q5Qzo4YblC_Lp7EVjvPXQNn_zzdjjFpK4/exec';
+            const agent = document.getElementById('active-agent').innerText;
+            const userMessage = userMsg || "[Image Only]";
+            const aiReply = aiMsg;
 
             try {
-                // Using no-cors as requested for Google Apps Script
-                await fetch(scriptURL, {
+                await fetch(googleSheetURL, {
                     method: 'POST',
                     mode: 'no-cors',
-                    cache: 'no-cache',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload)
+                    headers: {'Content-Type': 'text/plain'},
+                    body: JSON.stringify({agent, userMessage, aiReply})
                 });
             } catch (error) {
                 console.error('Error syncing to Google Sheets:', error);
@@ -249,7 +243,7 @@
             if(!text && !base64Image) return;
             if(keys.length === 0) { alert("দয়া করে অন্তত একটি Groq API Key দিন!"); toggleModal(true); return; }
 
-            const userText = text; // store for sync
+            const userTextForSync = text;
             addMessage(text, 'user', base64Image);
             inputField.value = '';
             inputField.style.height = 'auto';
@@ -261,7 +255,7 @@
                 addMessage(response, 'ai');
                 
                 // Sync to Google Sheets
-                syncToGoogleSheet(userText, response);
+                syncToGoogleSheet(userTextForSync, response);
 
             } catch (err) {
                 addMessage("ত্রুটি: সবগুলি API Key চেক করা হয়েছে কিন্তু কোনোটিই কাজ করছে না।", 'ai');
@@ -271,7 +265,6 @@
             }
         }
 
-        // Fallback Logic: Try multiple keys if one fails
         async function callGroqWithFallback(prompt, img, keys) {
             for (let i = currentKeyIndex; i < keys.length; i++) {
                 try {
@@ -292,7 +285,7 @@
                     });
 
                     if (res.ok) {
-                        currentKeyIndex = i; // Save working key index
+                        currentKeyIndex = i; 
                         const data = await res.json();
                         const reply = data.choices[0].message.content;
                         if(!img) chatHistory.push({role: "user", content: prompt}, {role: "assistant", content: reply});
@@ -304,7 +297,6 @@
                     console.error(e);
                 }
             }
-            // If we reach here, reset index for next try and throw error
             currentKeyIndex = 0;
             throw new Error("All keys failed");
         }
