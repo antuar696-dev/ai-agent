@@ -5,6 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Blue Nexus AI - Research & Vision</title>
     <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Firebase SDKs -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+
     <style>
         :root {
             --bg-color: #f0f2f5;
@@ -14,6 +19,8 @@
             --text-dark: #1c1e21;
             --border-color: #dee2e6;
             --shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            --status-online: #28a745;
+            --status-offline: #6c757d;
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
@@ -39,11 +46,35 @@
         .menu-dots { font-size: 1.5rem; cursor: pointer; padding: 5px 10px; border-radius: 50%; transition: 0.2s; color: var(--accent-blue); }
         .menu-dots:hover { background: var(--light-blue); }
 
+        /* Main Layout */
+        #main-wrapper { display: flex; flex: 1; overflow: hidden; }
+
+        /* Sidebar for Agents */
+        #network-sidebar {
+            width: 250px;
+            background: var(--main-white);
+            border-right: 1px solid var(--border-color);
+            display: flex;
+            flex-direction: column;
+            transition: 0.3s;
+        }
+
+        .sidebar-header { padding: 15px; font-weight: 600; border-bottom: 1px solid var(--border-color); font-size: 0.9rem; color: var(--accent-blue); }
+        #agent-list { flex: 1; overflow-y: auto; padding: 10px; }
+        .agent-item { 
+            display: flex; align-items: center; gap: 10px; padding: 8px; 
+            border-radius: 8px; margin-bottom: 5px; font-size: 0.85rem; cursor: pointer;
+        }
+        .agent-item:hover { background: var(--light-blue); }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .online { background: var(--status-online); }
+        .offline { background: var(--status-offline); }
+
         /* Chat Window */
         #chat-container {
             flex: 1;
             overflow-y: auto;
-            padding: 30px 15%;
+            padding: 30px 10%;
             display: flex;
             flex-direction: column;
             gap: 20px;
@@ -63,6 +94,7 @@
 
         .user-message { align-self: flex-end; background-color: var(--accent-blue); color: white; border-bottom-right-radius: 2px; }
         .ai-message { align-self: flex-start; background-color: var(--main-white); color: var(--text-dark); border-bottom-left-radius: 2px; box-shadow: var(--shadow); }
+        .system-message { align-self: center; background: #e2e8f0; font-size: 0.75rem; padding: 5px 12px; border-radius: 10px; }
 
         .msg-image { max-width: 100%; border-radius: 10px; margin-bottom: 8px; border: 1px solid #ddd; }
 
@@ -83,10 +115,11 @@
         .api-box { background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #eee; }
         .api-box h4 { font-size: 0.85rem; margin-bottom: 10px; color: var(--accent-blue); }
 
-        textarea.api-list { width: 100%; height: 80px; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; resize: none; font-size: 0.8rem; }
+        textarea.api-list { width: 100%; height: 60px; padding: 10px; border: 1px solid var(--border-color); border-radius: 8px; resize: none; font-size: 0.8rem; }
+        .input-small { width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ddd; font-size: 0.85rem; margin-top: 5px; }
 
         /* Input Area */
-        #input-area { padding: 20px 15%; background: var(--bg-color); }
+        #input-area { padding: 20px 10%; background: var(--bg-color); }
         
         .input-card {
             background: white; border-radius: 24px; padding: 8px 15px; border: 1px solid var(--border-color);
@@ -103,13 +136,16 @@
         /* Progress Bar */
         .progress-ui { display: none; margin-bottom: 8px; }
         .p-bar { height: 4px; background: #e0e0e0; border-radius: 2px; overflow: hidden; }
-        .p-fill { height: 100%; background: var(--accent-color); width: 0%; transition: 0.3s; background: var(--accent-blue); }
+        .p-fill { height: 100%; background: var(--accent-blue); width: 0%; transition: 0.3s; }
 
         #image-preview-container { display: none; padding: 5px; position: relative; width: fit-content; }
         #image-preview { height: 60px; border-radius: 8px; border: 1px solid var(--accent-blue); }
         .remove-img { position: absolute; top: -5px; right: -5px; cursor: pointer; background: red; color: white; border-radius: 50%; width: 18px; height: 18px; font-size: 12px; display: flex; align-items: center; justify-content: center; }
 
-        @media (max-width: 768px) { #chat-container, #input-area { padding: 15px; } }
+        @media (max-width: 768px) { 
+            #network-sidebar { display: none; }
+            #chat-container, #input-area { padding: 15px; } 
+        }
     </style>
 </head>
 <body>
@@ -118,37 +154,50 @@
         <div class="logo-area">
             <button class="btn-new" onclick="createNewChat()">+ New Session</button>
         </div>
-        <div style="font-weight: 600; color: var(--accent-blue);" id="active-agent">Blue Nexus AI</div>
+        <div style="font-weight: 600; color: var(--accent-blue);" id="active-agent-display">Blue Nexus AI</div>
         <div class="menu-dots" onclick="toggleModal(true)">⋮</div>
     </header>
 
-    <div id="chat-container">
-        <div class="message ai-message">
-            স্বাগতম! আমি আপনার ব্লু নেক্সাস এআই। <br><br>
-            প্রথমে ৩-ডট মেনু থেকে আপনার <b>Groq API Key(s)</b> যোগ করে নিন। আপনি একাধিক কি যোগ করতে পারেন (একটি করে প্রতি লাইনে)। যদি একটি কি কাজ না করে, আমি স্বয়ংক্রিয়াভাবে পরেরটি ব্যবহার করব।
+    <div id="main-wrapper">
+        <aside id="network-sidebar">
+            <div class="sidebar-header">🌐 Network Agents</div>
+            <div id="agent-list">
+                <!-- Agents populate here -->
+            </div>
+        </aside>
+
+        <div id="chat-container">
+            <div class="message ai-message">
+                স্বাগতম! আমি আপনার ব্লু নেক্সাস এআই। <br><br>
+                প্রথমে ৩-ডট মেনু থেকে আপনার <b>Groq API Key(s)</b> যোগ করে নিন।
+            </div>
         </div>
     </div>
 
     <!-- Settings Modal -->
     <div id="settings-modal">
         <div class="modal-content">
-            <h3 style="margin-bottom: 20px; color: var(--accent-blue);">Settings & API Keys</h3>
+            <h3 style="margin-bottom: 20px; color: var(--accent-blue);">Settings & Network</h3>
 
             <div class="api-box">
-                <h4>Groq API Keys (একাধিক কি দিতে পারেন, প্রতি লাইনে একটি)</h4>
-                <textarea id="groq-keys" class="api-list" placeholder="gsk_xxxx...&#10;gsk_yyyy..."></textarea>
+                <h4>Agent Identity</h4>
+                <input type="text" id="agent-name" class="input-small" placeholder="Enter your agent name...">
             </div>
 
             <div class="api-box">
-                <h4>Tavily Search Key (Optional)</h4>
-                <input type="password" id="tavily-key" style="width: 100%; padding: 8px; border-radius: 5px; border: 1px solid #ddd;" placeholder="tvly-...">
+                <h4>Groq API Keys (প্রতি লাইনে একটি)</h4>
+                <textarea id="groq-keys" class="api-list" placeholder="gsk_xxxx..."></textarea>
+            </div>
+
+            <div class="api-box">
+                <h4>Connect to Remote Agent Link</h4>
+                <input type="text" id="connect-link" class="input-small" placeholder="Paste share link here..." onchange="processConnectLink(this.value)">
             </div>
 
             <div style="display: flex; gap: 10px;">
-                <button onclick="toggleModal(false)" style="flex:1; padding:10px; border-radius:8px; border:none; background:var(--accent-blue); color:white; font-weight:600; cursor:pointer;">Save Keys</button>
-                <button onclick="generateShareLink()" style="padding:10px; border-radius:8px; border:1px solid var(--accent-blue); color:var(--accent-blue); background:white; cursor:pointer;">🔗 Share</button>
+                <button onclick="saveAndClose()" style="flex:1; padding:10px; border-radius:8px; border:none; background:var(--accent-blue); color:white; font-weight:600; cursor:pointer;">Save & Close</button>
+                <button onclick="generateShareLink()" style="padding:10px; border-radius:8px; border:1px solid var(--accent-blue); color:var(--accent-blue); background:white; cursor:pointer;">🔗 Share My Link</button>
             </div>
-            <p style="font-size: 0.7rem; color: #888; margin-top: 10px;">* Keys are stored only in your browser's session.</p>
         </div>
     </div>
 
@@ -175,12 +224,101 @@
     </div>
 
     <script>
+        // --- Firebase Configuration ---
+        const firebaseConfig = {
+            databaseURL: "https://ar-ai-195a9-default-rtdb.firebaseio.com"
+        };
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.database();
+
         let chatHistory = [];
         let base64Image = null;
         let currentKeyIndex = 0;
+        let myAgentName = localStorage.getItem('nexus_agent_name') || 'Agent-' + Math.floor(Math.random() * 9000 + 1000);
+        
+        document.getElementById('agent-name').value = myAgentName;
+        document.getElementById('active-agent-display').innerText = myAgentName;
+
+        // --- Firebase Features ---
+
+        // 1. Agent Online Status
+        function updateOnlineStatus() {
+            const statusRef = db.ref('agents/' + myAgentName);
+            statusRef.set({
+                name: myAgentName,
+                lastSeen: Date.now()
+            });
+            statusRef.onDisconnect().remove();
+        }
+
+        // 2. Agent List with Live Status
+        async function refreshAgentList() {
+            const snapshot = await db.ref('agents').once('value');
+            const agents = snapshot.val() || {};
+            const listEl = document.getElementById('agent-list');
+            listEl.innerHTML = '';
+
+            const now = Date.now();
+            Object.values(agents).forEach(agent => {
+                const isOnline = (now - agent.lastSeen) < 60000;
+                const item = document.createElement('div');
+                item.className = 'agent-item';
+                item.onclick = () => connectToAgent(agent.name);
+                item.innerHTML = `
+                    <div class="status-dot ${isOnline ? 'online' : 'offline'}"></div>
+                    <span>${agent.name} ${agent.name === myAgentName ? '(You)' : ''}</span>
+                `;
+                listEl.appendChild(item);
+            });
+        }
+
+        // 3. Agent Connect via Link & Message Passing
+        function connectToAgent(targetName) {
+            if(targetName === myAgentName) return;
+            db.ref('connections/' + myAgentName).set({ connectedTo: targetName });
+            addMessage(`Connected to ${targetName}. You can now send data.`, 'system');
+        }
+
+        function listenForMessages() {
+            db.ref('messages/' + myAgentName).on('child_added', (snapshot) => {
+                const data = snapshot.val();
+                if (data && data.sender !== myAgentName) {
+                    addMessage(`📩 Received from ${data.sender}: ${data.text}`, 'ai');
+                    // Remove message after reading to keep DB clean
+                    snapshot.ref.remove();
+                }
+            });
+        }
+
+        async function sendToNetwork(text) {
+            // Check if we are connected to anyone
+            const snap = await db.ref('connections/' + myAgentName).once('value');
+            const conn = snap.val();
+            if(conn && conn.connectedTo) {
+                db.ref('messages/' + conn.connectedTo).push({
+                    sender: myAgentName,
+                    text: text,
+                    timestamp: Date.now()
+                });
+            }
+        }
+
+        // --- Core UI & Logic ---
 
         function toggleModal(show) {
             document.getElementById('settings-modal').style.display = show ? 'flex' : 'none';
+        }
+
+        function saveAndClose() {
+            const newName = document.getElementById('agent-name').value.trim();
+            if(newName && newName !== myAgentName) {
+                db.ref('agents/' + myAgentName).remove();
+                myAgentName = newName;
+                localStorage.setItem('nexus_agent_name', myAgentName);
+                document.getElementById('active-agent-display').innerText = myAgentName;
+                updateOnlineStatus();
+            }
+            toggleModal(false);
         }
 
         function handleImage(input) {
@@ -203,7 +341,7 @@
 
         function createNewChat() {
             chatHistory = [];
-            document.getElementById('chat-container').innerHTML = `<div class="message ai-message">নতুন চ্যাট শুরু হয়েছে। আমি এখন ক্ল্লিন।</div>`;
+            document.getElementById('chat-container').innerHTML = `<div class="message system-message">New session started.</div>`;
             removeImage();
         }
 
@@ -222,26 +360,27 @@
             const keys = keysRaw.split('\n').filter(k => k.trim() !== "");
 
             if(!text && !base64Image) return;
-            if(keys.length === 0) { alert("দয়া করে অন্তত একটি Groq API Key দিন!"); toggleModal(true); return; }
+            if(keys.length === 0) { alert("Please add a Groq API Key in settings!"); toggleModal(true); return; }
 
             addMessage(text, 'user', base64Image);
             inputField.value = '';
             inputField.style.height = 'auto';
 
-            updateProgress(40, "🧠 AI is processing...");
+            updateProgress(40, "🧠 AI Thinking...");
 
             try {
                 const response = await callGroqWithFallback(text, base64Image, keys);
                 addMessage(response, 'ai');
+                // Auto-share research with connected agent
+                sendToNetwork(response);
             } catch (err) {
-                addMessage("ত্রুটি: সবগুলি API Key চেক করা হয়েছে কিন্তু কোনোটিই কাজ করছে না।", 'ai');
+                addMessage("Error: API Keys exhausted or connection failed.", 'ai');
             } finally {
-                updateProgress(100, "✅ Success");
+                updateProgress(100, "Done");
                 removeImage();
             }
         }
 
-        // Fallback Logic: Try multiple keys if one fails
         async function callGroqWithFallback(prompt, img, keys) {
             for (let i = currentKeyIndex; i < keys.length; i++) {
                 try {
@@ -262,19 +401,14 @@
                     });
 
                     if (res.ok) {
-                        currentKeyIndex = i; // Save working key index
+                        currentKeyIndex = i;
                         const data = await res.json();
                         const reply = data.choices[0].message.content;
                         if(!img) chatHistory.push({role: "user", content: prompt}, {role: "assistant", content: reply});
                         return reply;
-                    } else {
-                        console.warn(`Key ${i+1} failed. Trying next...`);
                     }
-                } catch (e) {
-                    console.error(e);
-                }
+                } catch (e) { console.error(e); }
             }
-            // If we reach here, reset index for next try and throw error
             currentKeyIndex = 0;
             throw new Error("All keys failed");
         }
@@ -295,22 +429,46 @@
             container.scrollTop = container.scrollHeight;
         }
 
+        // 4. URL Sharing Logic
         function generateShareLink() {
             const config = {
                 g: document.getElementById('groq-keys').value,
-                t: document.getElementById('tavily-key').value
+                n: myAgentName
             };
             const link = window.location.origin + window.location.pathname + '#' + btoa(JSON.stringify(config));
             navigator.clipboard.writeText(link);
-            alert("কনফিগারেশনসহ লিঙ্ক কপি হয়েছে!");
+            alert("Share link copied! Send this to another agent to connect.");
         }
 
+        function processConnectLink(val) {
+            try {
+                const hash = val.split('#')[1];
+                const config = JSON.parse(atob(hash));
+                if(config.n) {
+                    connectToAgent(config.n);
+                    addMessage(`Attempting to connect to ${config.n}...`, 'system');
+                }
+            } catch(e) {
+                alert("Invalid Link format.");
+            }
+        }
+
+        // Init Lifecycle
         window.onload = () => {
+            updateOnlineStatus();
+            listenForMessages();
+            
+            // Heartbeat every 30s
+            setInterval(updateOnlineStatus, 30000);
+            // Refresh list every 10s
+            setInterval(refreshAgentList, 10000);
+            refreshAgentList();
+
             if(window.location.hash) {
                 try {
                     const config = JSON.parse(atob(window.location.hash.substring(1)));
-                    document.getElementById('groq-keys').value = config.g || '';
-                    document.getElementById('tavily-key').value = config.t || '';
+                    if(config.g) document.getElementById('groq-keys').value = config.g;
+                    if(config.n) connectToAgent(config.n);
                 } catch(e) {}
             }
         };
